@@ -16,4 +16,4 @@ class Game:
     def update(self):
         
     def render(self):
-        
+        '''Do render pls'''
