@@ -748,4 +748,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.12"
-content-hash = "b51384787a76794ace8c2af3903c7ab73401d7c17fdd2ae68c677e67c7bd4313"
+content-hash = "3ce595c2907764b8d908d0f904eee5074766c67a78b3845e031f2282461fcffd"
