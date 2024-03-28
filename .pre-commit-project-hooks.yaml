@@ -38,4 +38,3 @@ repos:
         entry: run-pre-commit-project-tool
         args: [python]
         types: [python]
-

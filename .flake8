@@ -48,4 +48,3 @@ classmethod-decorators =
     # pydantic
     validator
     root_validator
-
