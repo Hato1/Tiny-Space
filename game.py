@@ -19,7 +19,7 @@ class State(Enum):
 class Game:
     def __init__(self):
         logging.info("Starting game...")
-        self.state = State.RUNNING
+        self.state = State.RESTARTING
         self._screen = None
         self.size = self.width, self.height = 640, 400
 
@@ -28,7 +28,7 @@ class Game:
 
         pg.init()
         self._screen = pg.display.set_mode(self.size, pg.HWSURFACE | pg.DOUBLEBUF)
-        self.reset()
+        self.main_loop()
 
     def reset(self):
         """Reset the game and start it again."""
