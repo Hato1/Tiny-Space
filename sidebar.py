@@ -61,8 +61,9 @@ class Sidebar(Surface):
         vertical_cursor = 0
         self.surface.fill((255, 0, 0))
         for surface in self.surfaces:
-            self.surface.blit(surface.render(), (0, vertical_cursor))
-            vertical_cursor += surface.surface.get_size()[1]
+            rendered = surface.render()
+            self.surface.blit(rendered, (0, vertical_cursor))
+            vertical_cursor += rendered.get_size()[1]
         return self.surface
 
     def process_inputs(self, mouse_position: Point):

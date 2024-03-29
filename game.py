@@ -38,7 +38,7 @@ class Game:
         horizontal_split = int(self.width * 0.7)
         sidebar_width = self.width - horizontal_split
         self.surfaces = [
-            (World(), Box(0, 0, 250, 250)),
+            (World(horizontal_split, self.height), Box(0, 0, horizontal_split, self.height)),
             (Sidebar(sidebar_width, self.height), Box(horizontal_split, 0, sidebar_width, self.height)),
         ]
         self.state = State.RUNNING
