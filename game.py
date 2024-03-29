@@ -1,9 +1,11 @@
 """Run this to run the game :)"""
 
-import pygame
-from world import World
 import logging
 from collections import namedtuple
+
+import pygame
+
+from world import World
 
 # from pygame.locals import *
 
@@ -19,7 +21,7 @@ class Game:
         # Surfaces and their position on-screen
         self.surfaces: list[pygame.Surface, tuple[Box]] = [
             (World(), Box(0, 0, 250, 250)),
-            ]
+        ]
 
     def on_init(self):
         pygame.init()
@@ -39,15 +41,15 @@ class Game:
 
     def update(self):
         """Update the game. Runs every frame.
-        
-        Currently unused but in future this could handle animation frames and 
+
+        Currently unused but in future this could handle animation frames and
         any cooldowns/timers we may have.
         """
         pass
 
     def render(self):
         """Draw all the surfaces to the display."""
-        self._screen.fill((0,255,0))
+        self._screen.fill((0, 255, 0))
         for surface in self.surfaces:
             assert type(surface[1]) is Box, f"Expected type Box. Instead got {type(surface[1])}"
             x, y, width, height = surface[1]
