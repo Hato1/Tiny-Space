@@ -8,7 +8,7 @@ from typing import Iterator, Type, overload
 import pygame
 
 from buildings import Base, Building
-from helpers import ORTHOGONAL, Point
+from helpers import ORTHOGONAL, GridPoint, Point
 from resources import Queue, Resource
 from templates import Surface
 from tiles import Tile
@@ -19,6 +19,8 @@ common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30,
 class Grid:
     """Low level generic object representing a 2d grid that can be treated similarly to a list of lists.
 
+    As a rule of thumb, it shouldn't contain any logic specific to the game.
+
     You can index into the grid like so:
     g = Grid()
     g[3,4]
@@ -27,19 +29,24 @@ class Grid:
     g = Grid()
     for point, tile in g:
         assert g[point] == tile
+
+    Methods:
+        is_in_grid(self, point: GridPoint) -> bool
+        height(self) -> int
+        width(self) -> int
     """
 
-    def __init__(self, size: Point):
-        self.size: Point = size
+    def __init__(self, size: GridPoint):
+        self.size: GridPoint = size
         self._grid: list[list[Tile]]
-        self.initialise_grid()
+        self._initialise_grid()
 
-    def initialise_grid(self):
+    def _initialise_grid(self):
         """Set tiles to a 2d grid according to grid_size and place the Base structure in the center tile."""
         self._grid = [[Tile() for _ in range(self.size.y)] for _ in range(self.size.x)]
         self[self.size.x // 2, self.size.y // 2].contains = Base
 
-    def is_in_grid(self, point: Point) -> bool:
+    def is_in_grid(self, point: GridPoint) -> bool:
         """Return whether point lies in the grid"""
         return 0 <= point.x < self.size.x and 0 <= point.y < self.size.y
 
@@ -57,21 +64,21 @@ class Grid:
     def __getitem__(self, index: int) -> list[Tile]: ...
 
     @overload
-    def __getitem__(self, index: tuple | Point) -> Tile: ...
+    def __getitem__(self, index: tuple | GridPoint) -> Tile: ...
 
     def __getitem__(self, index: int | tuple) -> list[Tile] | Tile:
         """Retrieve elements of the map at the given row or (row, col) pair"""
         if isinstance(index, int):
             return self._grid[index]
-        elif isinstance(index, (tuple, Point)):
-            index = Point(*index)
+        elif isinstance(index, (tuple, GridPoint)):
+            index = GridPoint(*index)
             return self._grid[index.x][index.y]
         raise ValueError
 
-    def __iter__(self) -> Iterator[tuple[Point, Tile]]:
+    def __iter__(self) -> Iterator[tuple[GridPoint, Tile]]:
         for x in range(self.width):
             for y in range(self.height):
-                yield Point(x, y), self[x, y]
+                yield GridPoint(x, y), self[x, y]
 
 
 class RenderGrid(Surface):
@@ -90,9 +97,9 @@ class RenderGrid(Surface):
     def get_name(self):
         return "Grid"
 
-    def pixels_to_grid(self, point: Point) -> Point:
+    def pixels_to_grid(self, point: Point) -> GridPoint:
         """Return Grid coordinate of point in pixels."""
-        return Point(int(point.x // self.cell_size), int(point.y // self.cell_size))
+        return GridPoint(int(point.x // self.cell_size), int(point.y // self.cell_size))
 
     def draw_grid_surface(self):
         """Draw the grid lines in the center of the display."""
@@ -107,7 +114,7 @@ class RenderGrid(Surface):
         pygame.draw.line(self.surface, common_colours["BLUE"], (0, max_y), (max_x, max_y), line_width)
         pygame.draw.line(self.surface, common_colours["BLUE"], (max_x, 0), (max_x, max_y), line_width)
 
-    def draw_tile(self, thing: Type[Resource] | Type[Building], grid_coord: Point):
+    def draw_tile(self, thing: Type[Resource] | Type[Building], grid_coord: GridPoint):
         asset_size = Point(*thing.image().get_size())
         self.surface.blit(
             thing.image(),
@@ -129,9 +136,9 @@ class RenderGrid(Surface):
 
 
 class World(Surface):
-    default_grid_size = Point(7, 5)
+    default_grid_size = GridPoint(7, 7)
 
-    def __init__(self, width: int, height: int, grid_size: Point = default_grid_size, cell_size: int = 50):
+    def __init__(self, width: int, height: int, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
         assert grid_size.x * cell_size < width, "Grid too wide for display area!"
         assert grid_size.y * cell_size < height, "Grid too tall for display area!"
         self.name = "World"
@@ -160,15 +167,15 @@ class World(Surface):
         self.world_surface.blit(grid, self.get_render_grid_rect())
         return self.world_surface
 
-    def has_adjacent_tile(self, grid_coord: Point) -> bool:
+    def has_adjacent_tile(self, grid_coord: GridPoint) -> bool:
         """Returns True if an adjacent tile isn't empty."""
-        orthogonal_tiles = [grid_coord + direction for direction in ORTHOGONAL]
+        orthogonal_tiles: list[GridPoint] = [grid_coord + direction for direction in ORTHOGONAL]
         for point in orthogonal_tiles:
             if self.grid.is_in_grid(point) and not self.grid[point].empty:
                 return True
         return False
 
-    def fill_tile(self, point: Point, thing: Type[Resource] | Type[Building]) -> bool:
+    def fill_tile(self, point: GridPoint, thing: Type[Resource] | Type[Building]) -> bool:
         """Fill the tile, if possible.
 
         Filling a tile is not possible if it's already filled or if there are no adjacent filled tiles.
