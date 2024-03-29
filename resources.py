@@ -11,6 +11,7 @@ class ResourceMeta(type):
 
 
 class Resource(metaclass=ResourceMeta):
+
     RESOURCE_REGISTRY: list[Type[Resource]] = []
 
     @classmethod
@@ -49,7 +50,10 @@ class ResourceQueue:
         self.extend_queue()
 
     def extend_queue(self):
-        self.queue.extend([resource for resource in Resource.RESOURCE_REGISTRY for _ in range(5)])
+        """Repopulates the queue with an even balance of resources."""
+        pool = [resource for resource in Resource.RESOURCE_REGISTRY for _ in range(5)]
+        random.shuffle(pool)
+        self.queue.extend(pool)
 
     def peek_n(self, n) -> list[Type[Resource]]:
         """Peek, but don't remove the next n items from the queue"""

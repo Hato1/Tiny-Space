@@ -27,7 +27,7 @@ class Game:
         self.surfaces: list[tuple[Surface, Box]] = []
 
         pg.init()
-        self._screen = pg.display.set_mode(self.size, pg.HWSURFACE | pg.DOUBLEBUF)
+        self._screen = pg.display.set_mode(self.size, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
         self.main_loop()
 
     def reset(self):
