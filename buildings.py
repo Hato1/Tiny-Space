@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pygame as pg
 
+from resources import Aerofoam, Iron, Oil
+
 
 class BuildingMeta(type):
     def __repr__(self):
@@ -25,3 +27,8 @@ class Building(metaclass=BuildingMeta):
 
 class Base(Building):
     pass
+
+
+class WardenOutpost(Building):
+    def __init__(self):
+        self.shape = [[Iron, Oil, Iron], [None, Aerofoam, None]]
