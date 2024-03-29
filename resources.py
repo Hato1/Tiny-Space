@@ -18,7 +18,7 @@ class Resource(metaclass=ResourceMeta):
 
     @classmethod
     def image(cls):
-        return pg.image.load(cls.get_file)
+        return pg.image.load(cls.get_file())
 
     @classmethod
     def get_file(cls) -> Path:

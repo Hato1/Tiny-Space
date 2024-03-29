@@ -54,6 +54,15 @@ class World(Surface):
 
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (0, max_y), (max_x, max_y))
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (max_x, 0), (max_x, max_y))
+        
+    def draw_tiles(self):
+        for row in range(self.rows):
+            for colum in range(self.columns):
+                if self.tiles[row][colum].contains:
+                    image = self.tiles[row][colum].contains.image()
+                    x_loc = colum * self.cell_size
+                    y_loc = row * self.cell_size
+                    self.world_surface.blit(image, (x_loc, y_loc))
 
     def initialise_tiles(self):
         x_odd_offset = 0
@@ -75,8 +84,9 @@ class World(Surface):
             self.tiles.append(tile_row)
 
     def render(self) -> pygame.Surface:
+        self.draw_background()
         self.draw_grid_surface()
-
+        self.draw_tiles()
         return self.world_surface
 
     def location_to_tile(self, location: Point) -> GridCoordinate:

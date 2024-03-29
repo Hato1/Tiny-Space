@@ -14,10 +14,12 @@ class Building(metaclass=BuildingMeta):
 
     @classmethod
     def image(cls):
-        return pg.image.load(cls.get_file)
+        print("Image CLS: {}".format(cls))
+        return pg.image.load(cls.get_file())
 
     @classmethod
     def get_file(cls) -> Path:
+        print(cls)
         file = Path(f"assets/structures/{cls}.png")
         assert file.exists(), f"Could not find resource: {file!r}"
         return file
