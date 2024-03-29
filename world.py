@@ -8,7 +8,7 @@ import pygame
 
 from buildings import Base
 from helpers import GridCoordinate, Point
-from resources import Iron
+from resources import Queue
 from templates import Surface
 from tiles import Tile
 
@@ -34,8 +34,8 @@ class World(Surface):
         # print(mouse_position)
         grid_coordinate = self.location_to_tile(mouse_position)
         # print(grid_coordinate)
-        # resource = Queue.take()
-        self.add_tile(grid_coordinate, Tile(is_empty=False, contains=Iron))
+        resource = Queue.take()
+        self.add_tile(grid_coordinate, Tile(is_empty=False, contains=resource))
         # pass
 
     def draw_background(self):
@@ -54,12 +54,12 @@ class World(Surface):
 
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (0, max_y), (max_x, max_y))
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (max_x, 0), (max_x, max_y))
-        
+
     def draw_tiles(self):
         for row in range(self.rows):
             for colum in range(self.columns):
-                if self.tiles[row][colum].contains:
-                    image = self.tiles[row][colum].contains.image()
+                if self.tiles[colum][row].contains:
+                    image = self.tiles[colum][row].contains.image()
                     x_loc = colum * self.cell_size
                     y_loc = row * self.cell_size
                     self.world_surface.blit(image, (x_loc, y_loc))
