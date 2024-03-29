@@ -1,0 +1,68 @@
+#!python
+
+import logging
+import sys
+
+from game import Game  # noqa: I900
+
+
+class CustomFormatter(logging.Formatter):
+
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    message = "%(levelname)s: %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: grey + message + reset,
+        logging.INFO: grey + message + reset,
+        logging.WARNING: yellow + message + reset,
+        logging.ERROR: red + message + reset,
+        logging.CRITICAL: bold_red + message + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+# TODO: Set this in command line argument
+# If you want to be spammed less choose a different logging level:
+# DEBUG
+# INFO
+# WARNING
+# ERROR
+# CRITICAL
+
+LEVELS = {
+    "DEBUG": 10,
+    "INFO": 20,
+    "WARNING:": 30,
+    "ERROR": 40,
+    "CRITICAL": 50,
+}
+
+args = sys.argv
+try:
+    arg = sys.argv[1]
+    if arg in LEVELS:
+        LOG_LEVEL = LEVELS[arg]
+    else:
+        LOG_LEVEL = int(sys.argv[1])
+except (IndexError, ValueError):
+    LOG_LEVEL = 20
+
+# Setting root logger is bad practise, but that doesn't stop me!
+logger = logging.root
+logger.setLevel(LOG_LEVEL)
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(LOG_LEVEL)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
+
+Game()

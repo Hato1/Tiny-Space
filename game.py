@@ -13,7 +13,7 @@ from world import World
 
 class Game:
     def __init__(self):
-        logging.info("Starting game..")
+        logging.info("Starting game...")
         self._running = True
         self._screen = None
         self.size = self.width, self.height = 640, 400
