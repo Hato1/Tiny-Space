@@ -2,9 +2,12 @@
 
 """
 
+import logging
+
 import pygame
 import tiles
 
+from helpers import Point
 from templates import Surface
 
 common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200)}
@@ -25,6 +28,9 @@ class World(Surface):
 
     def get_name(self) -> str:
         return self.name
+
+    def process_inputs(self, mouse_position: Point):
+        pass
 
     def set_grid_surface(self):
         max_x = self.cell_size * self.columns
