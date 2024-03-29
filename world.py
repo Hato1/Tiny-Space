@@ -34,8 +34,10 @@ class World(Surface):
         # print(mouse_position)
         grid_coordinate = self.location_to_tile(mouse_position)
         # print(grid_coordinate)
-        resource = Queue.take()
-        self.add_tile(grid_coordinate, Tile(is_empty=False, contains=resource))
+        resource = Queue.peek()
+        resource_added = self.add_tile(grid_coordinate, Tile(is_empty=False, contains=resource))
+        if resource_added:
+            Queue.take()
         # pass
 
     def draw_background(self):
@@ -117,8 +119,9 @@ class World(Surface):
     def add_tile(self, grid_loc: GridCoordinate, tile: Tile):
         if self.tiles[grid_loc.x][grid_loc.y].empty is False:
             logging.warning("Space Occupied at {},{}".format(grid_loc.x, grid_loc.y))
-            return
+            return False
         if self.check_for_adjacencies(grid_loc) is False:
             logging.warning("Space not adjacent to existing block at {},{}".format(grid_loc.x, grid_loc.y))
-            return
+            return False
         self.change_tile(grid_loc, tile)
+        return True
