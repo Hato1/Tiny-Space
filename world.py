@@ -4,10 +4,12 @@
 
 import pygame
 
+from templates import Surface
+
 common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200)}
 
 
-class World:
+class World(Surface):
     def __init__(self):
         self.name = "World"
         self.cell_size = 500
@@ -17,6 +19,9 @@ class World:
         self.mesh_colour = common_colours["BLACK"]
         self.bg_colour = common_colours["WHITE"]
         self.set_grid_surface()
+
+    def get_name(self) -> str:
+        return self.name
 
     def set_grid_surface(self):
         max_x = self.cell_size * self.columns

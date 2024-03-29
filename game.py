@@ -5,6 +5,7 @@ from collections import namedtuple
 
 import pygame
 
+from templates import Surface
 from world import World
 
 # from pygame.locals import *
@@ -14,12 +15,13 @@ Box = namedtuple("Box", ["x", "y", "width", "height"])
 
 class Game:
     def __init__(self):
+        logging.info("Starting game..")
         self._running = True
         self._screen = None
         self.size = self.width, self.height = 640, 400
 
         # Surfaces and their position on-screen
-        self.surfaces: list[pygame.Surface, tuple[Box]] = [
+        self.surfaces: list[tuple[Surface, Box]] = [
             (World(), Box(0, 0, 250, 250)),
         ]
 
@@ -34,8 +36,8 @@ class Game:
 
     def process_inputs(self):
         """Checks for inputs from the user; mouse keys etc"""
-        mouse_pressed = pygame.mouse.get_pressed
-        mouse_position = pygame.mouse.get_pos
+        # mouse_pressed = pygame.mouse.get_pressed
+        # mouse_position = pygame.mouse.get_pos
         for event in pygame.event.get():
             self.on_event(event)
 
@@ -53,10 +55,10 @@ class Game:
         for surface in self.surfaces:
             assert type(surface[1]) is Box, f"Expected type Box. Instead got {type(surface[1])}"
             x, y, width, height = surface[1]
-            assert x >= 0, f"Surface '{surface.name}' is off the left of the screen!"
-            assert y >= 0, f"Surface '{surface.name}' is off the top of the screen!"
-            assert x + width <= self.width, f"Surface '{surface.name}' is off the right of the screen!"
-            assert y + height <= self.height, f"Surface '{surface.name}' is off the bottom of the screen!"
+            assert x >= 0, f"Surface {surface[0].get_name()!r} is off the left of the screen!"
+            assert y >= 0, f"Surface {surface[0].get_name()!r} is off the top of the screen!"
+            assert x + width <= self.width, f"Surface {surface[0].get_name()!r} is off the right of the screen!"
+            assert y + height <= self.height, f"Surface {surface[0].get_name()!r} is off the bottom of the screen!"
 
             self._screen.blit(surface[0].render(), (0, 0), [x, y, width, height])
         pygame.display.update()
