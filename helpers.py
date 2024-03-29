@@ -30,3 +30,8 @@ class Box(NamedTuple):
             if self.y < point.y < self.max_y:
                 return True
         return False
+
+
+class GridCoordinate(NamedTuple):
+    x: int
+    y: int
