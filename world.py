@@ -6,9 +6,11 @@ import logging
 
 import pygame
 
-import tiles
+from buildings import Base
 from helpers import GridCoordinate, Point
+from resources import Iron
 from templates import Surface
+from tiles import Tile
 
 common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200)}
 
@@ -23,8 +25,7 @@ class World(Surface):
         self.mesh_colour = common_colours["BLACK"]
         self.bg_colour = common_colours["WHITE"]
         self.tiles = []
-        self.set_grid_surface()
-        self.generate_tiles()
+        self.initialise_tiles()
 
     def get_name(self) -> str:
         return self.name
@@ -33,10 +34,16 @@ class World(Surface):
         # print(mouse_position)
         grid_coordinate = self.location_to_tile(mouse_position)
         # print(grid_coordinate)
-        self.add_tile(grid_coordinate, tiles.Resource())
+        # resource = Queue.take()
+        self.add_tile(grid_coordinate, Tile(is_empty=False, contains=Iron))
         # pass
 
-    def set_grid_surface(self):
+    def draw_background(self):
+        max_x = self.cell_size * self.columns
+        max_y = self.cell_size * self.rows
+        pygame.draw.rect(self.world_surface, common_colours["BLACK"], (0, 0, max_x, max_y))
+
+    def draw_grid_surface(self):
         max_x = self.cell_size * self.columns
         max_y = self.cell_size * self.rows
         for x in range(0, max_x, self.cell_size):
@@ -48,7 +55,7 @@ class World(Surface):
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (0, max_y), (max_x, max_y))
         pygame.draw.line(self.world_surface, common_colours["BLUE"], (max_x, 0), (max_x, max_y))
 
-    def generate_tiles(self):
+    def initialise_tiles(self):
         x_odd_offset = 0
         y_odd_offset = 0
         if self.columns % 2 != 0:
@@ -59,15 +66,17 @@ class World(Surface):
         y_center = (self.rows + y_odd_offset) / 2 - 1
 
         for x in range(self.columns):
-            tile_row: list[tiles.Tile] = []
+            tile_row: list[Tile] = []
             for y in range(self.rows):
                 if x == x_center and y == y_center:
-                    tile_row.append(tiles.Base())
+                    tile_row.append(Tile(is_empty=False, contains=Base))
                 else:
-                    tile_row.append(tiles.EmptyTile())
+                    tile_row.append(Tile())
             self.tiles.append(tile_row)
 
     def render(self) -> pygame.Surface:
+        self.draw_grid_surface()
+
         return self.world_surface
 
     def location_to_tile(self, location: Point) -> GridCoordinate:
@@ -95,7 +104,7 @@ class World(Surface):
                 return True
         return False
 
-    def add_tile(self, grid_loc: GridCoordinate, tile: tiles.Tile):
+    def add_tile(self, grid_loc: GridCoordinate, tile: Tile):
         if self.tiles[grid_loc.x][grid_loc.y].empty is False:
             logging.warning("Space Occupied at {},{}".format(grid_loc.x, grid_loc.y))
             return

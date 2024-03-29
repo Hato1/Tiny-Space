@@ -2,38 +2,25 @@
 Holds the classes for the structures that are placed on the map
 """
 
+from typing import Type
+
+import pygame as pg
+
+from buildings import Building
+from resources import Resource
+
+# import structures
+
 
 class Tile:
-    def __init__(self):
+    def __init__(self, is_empty: bool = True, contains: None | Type[Resource] | Type[Building] = None):
         self.name = "UNUSED"
         self.score = 0
-        self.world_location = (0, 0)
-        self.screen_location = (0, 0)
-        self.empty = True
+        self.empty = is_empty
+        self.contains = contains
 
-
-class EmptyTile(Tile):
-    def __init__(self):
-        super().__init__()
-        self.name = "Empty"
-
-
-class Base(Tile):
-    def __init__(self):
-        super().__init__()
-        self.name = "Base"
-        self.empty = False
-
-
-class Resource(Tile):
-    def __init__(self):
-        super().__init__()
-        self.score = 1
-        self.empty = False
-
-
-class Structure(Tile):
-    def __init__(self):
-        super().__init__()
-        self.score = 3
-        self.empty = False
+    def draw_tile(self) -> pg.Surface:
+        if self.contains:
+            return self.contains.image()
+        else:
+            raise NotImplementedError

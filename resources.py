@@ -4,6 +4,8 @@ import random
 from pathlib import Path
 from typing import Type
 
+import pygame as pg
+
 
 class ResourceMeta(type):
     def __repr__(self):
@@ -15,8 +17,11 @@ class Resource(metaclass=ResourceMeta):
     RESOURCE_REGISTRY: list[Type[Resource]] = []
 
     @classmethod
-    def get_file(cls):
-        # TODO: Don't load image from disk every time...
+    def image(cls):
+        return pg.image.load(cls.get_file)
+
+    @classmethod
+    def get_file(cls) -> Path:
         file = Path(f"assets/resources/{cls}.png")
         assert file.exists(), f"Could not find resource: {file!r}"
         return file
