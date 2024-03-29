@@ -13,11 +13,18 @@ from resources import Resource
 
 
 class Tile:
-    def __init__(self, is_empty: bool = True, contains: None | Type[Resource] | Type[Building] = None):
+    def __init__(self, contains: None | Type[Resource] | Type[Building] = None):
         self.name = "UNUSED"
         self.score = 0
-        self.empty = is_empty
         self.contains = contains
+
+    @property
+    def empty(self) -> bool:
+        return type(self.contains) not in [type(Resource), type(Building)]
+
+    @property
+    def full(self) -> bool:
+        return not self.empty
 
     def draw_tile(self) -> pg.Surface:
         if self.contains:
