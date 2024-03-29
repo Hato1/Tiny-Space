@@ -6,6 +6,7 @@ from enum import Enum
 import pygame as pg
 
 from helpers import Box, Point
+from sidebar import Sidebar
 from templates import Surface
 from world import World
 
@@ -32,7 +33,14 @@ class Game:
 
     def reset(self):
         """Reset the game and start it again."""
-        self.surfaces = [(World(), Box(0, 0, 250, 250))]
+
+        # The Sidebar occupies the right 30% of the display.
+        horizontal_split = int(self.width * 0.7)
+        sidebar_width = self.width - horizontal_split
+        self.surfaces = [
+            (World(), Box(0, 0, 250, 250)),
+            (Sidebar(sidebar_width, self.height), Box(horizontal_split, 0, sidebar_width, self.height)),
+        ]
         self.state = State.RUNNING
 
     def process_key_input(self, event):
@@ -88,12 +96,12 @@ class Game:
         for surface in self.surfaces:
             assert type(surface[1]) is Box, f"Expected type Box. Instead got {type(surface[1])}"
             x, y, width, height = surface[1]
-            assert x >= 0, f"Surface {surface[0].get_name()!r} is off the left of the screen!"
-            assert y >= 0, f"Surface {surface[0].get_name()!r} is off the top of the screen!"
-            assert x + width <= self.width, f"Surface {surface[0].get_name()!r} is off the right of the screen!"
-            assert y + height <= self.height, f"Surface {surface[0].get_name()!r} is off the bottom of the screen!"
+            assert x >= 0, f"Surface {surface[0].get_name()!r} is off-screen at x={x}!"
+            assert y >= 0, f"Surface {surface[0].get_name()!r} is off-screen at y={y}!"
+            assert x + width <= self.width, f"Surface {surface[0].get_name()!r} is off-screen at x={x+width}!"
+            assert y + height <= self.height, f"Surface {surface[0].get_name()!r} is off-screen at y={y+height}!"
 
-            self._screen.blit(surface[0].render(), (0, 0), [x, y, width, height])
+            self._screen.blit(surface[0].render(), (x, y))
         pg.display.update()
 
     def main_loop(self):
