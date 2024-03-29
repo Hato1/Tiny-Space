@@ -1,6 +1,7 @@
 """Run this to run the game :)"""
 
 import logging
+from enum import Enum
 
 import pygame as pg
 
@@ -8,13 +9,17 @@ from helpers import Box, Point
 from templates import Surface
 from world import World
 
-# Box = namedtuple("Box", ["x", "y", "width", "height"])
+
+class State(Enum):
+    RUNNING = 1
+    QUITTING = 2
+    RESTARTING = 3
 
 
 class Game:
     def __init__(self):
         logging.info("Starting game...")
-        self._running = True
+        self.state = State.RUNNING
         self._screen = None
         self.size = self.width, self.height = 640, 400
 
@@ -27,46 +32,47 @@ class Game:
 
     def reset(self):
         """Reset the game and start it again."""
-        self.surfaces.append((World(), Box(0, 0, 250, 250)))
-        self._running = True
-        self.main_loop()
+        self.surfaces = [(World(), Box(0, 0, 250, 250))]
+        self.state = State.RUNNING
 
-    def on_event(self, event):
+    def process_key_input(self, event):
+        """Handle a single keypress"""
+        match event.key:
+            case pg.K_q:
+                self.state = State.QUITTING
+            case pg.K_r:
+                self.reset()
+            # These numbers can be used for Debug commands.
+            case pg.K_1:
+                logging.info(1)
+            case pg.K_2:
+                logging.info(2)
+            case pg.K_3:
+                logging.info(3)
+
+    def process_mouse_input(self, event):
+        """Handle a single mouseclick"""
+        mouse_position = Point(*event.pos)
+        for surface in self.surfaces:
+            if surface[1].contains(mouse_position):
+                relative_position = mouse_position.relative_to(surface[1])
+                surface[0].process_inputs(relative_position)
+
+    def process_input(self, event):
+        """Handle a single input."""
         if event.type == pg.QUIT:
-            self._running = False
+            self.state = State.QUITTING
         elif event.type == pg.KEYDOWN:
-            match event.key:
-                case pg.K_q:
-                    self._running = False
-                case pg.K_r:
-                    pass
-                    # game.kill_all()
-                # These numbers can be used for Debug commands.
-                case pg.K_1:
-                    logging.info(1)
-                case pg.K_2:
-                    logging.info(2)
-                case pg.K_3:
-                    logging.info(3)
-                case pg.K_4:
-                    logging.info(4)
-                case pg.K_5:
-                    logging.info(5)
-                case pg.K_6:
-                    logging.info(6)
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            mouse_position = Point(*event.pos)
-            for surface in self.surfaces:
-                if surface[1].contains(mouse_position):
-                    relative_position = mouse_position.relative_to(surface[1])
-                    surface[0].process_inputs(relative_position)
+            self.process_key_input(event)
+        elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            self.process_mouse_input(event)
 
     def process_inputs(self):
-        """Checks for inputs from the user; mouse keys etc"""
+        """Handle all user input since the last time this ran."""
         # mouse_pressed = pg.mouse.get_pressed
         # mouse_position = pg.mouse.get_pos
         for event in pg.event.get():
-            self.on_event(event)
+            self.process_input(event)
 
     def update(self):
         """Update the game. Runs every frame.
@@ -91,11 +97,16 @@ class Game:
         pg.display.update()
 
     def main_loop(self):
-        while self._running:
-            self.process_inputs()
-            self.update()
-            self.render()
-        logging.info("Exiting.")
+        while True:
+            if self.state == State.RUNNING:
+                self.process_inputs()
+                self.update()
+                self.render()
+            elif self.state is State.RESTARTING:
+                self.reset()
+            elif self.state is State.QUITTING:
+                logging.info("Quitting.")
+                return
 
 
 if __name__ == "__main__":
