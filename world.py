@@ -21,11 +21,7 @@ common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30,
 
 
 class RenderGrid(Surface):
-    def process_inputs(self, mouse_position: Point):
-        # This is handled by World
-        pass
-
-    def __init__(self, grid: Grid, cell_size):
+    def __init__(self, grid: Grid, cell_size: int):
         self.cell_size = cell_size
         self.grid = grid
         # Add an extra two pixels of padding to fit the lined border.
@@ -34,6 +30,10 @@ class RenderGrid(Surface):
         self.surface = pygame.Surface(surface_size)
         # The grid coordinate is the mouse is currently over.
         self.moused_tile: GridPoint | None = None
+
+    def process_inputs(self, mouse_position: Point):
+        # This is handled by World
+        pass
 
     def get_name(self):
         return "Grid"

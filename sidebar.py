@@ -6,8 +6,10 @@ The sidebar contains the players score, resource queue, and the schematics libra
 import pygame as pg
 
 import resources
+from buildings import Building
 from helpers import Point
 from templates import Surface
+from world import RenderGrid
 
 
 class Scoreboard(Surface):
@@ -49,12 +51,37 @@ class ResourceQueueUI(Surface):
         pass
 
 
+class SchematicBook(Surface):
+    def __init__(self, width):
+        self.height = width
+        self.surface = pg.Surface((width, self.height))
+        self.visible_buildings = [b for b in Building.BUILDING_REGISTRY if b.schematic]
+
+    def get_name(self) -> str:
+        return "SchematicBook"
+
+    def render(self) -> pg.Surface:
+        self.surface.fill((50, 50, 50))
+        height = 15
+        for building in self.visible_buildings:
+            render_grid = RenderGrid(building.schematic, 25)
+            surf = render_grid.render()
+            rect = surf.get_rect(center=self.surface.get_rect().center)
+            self.surface.blit(surf, (rect[0], height))
+            height += surf.get_height() + 15
+        return self.surface
+
+    def process_inputs(self, mouse_position: Point):
+        pass
+
+
 class Sidebar(Surface):
     def __init__(self, width, height):
         self.surface = pg.Surface((width, height))
         self.surfaces = [
             Scoreboard(width),
             ResourceQueueUI(width),
+            SchematicBook(width),
         ]
 
     def render(self) -> pg.Surface:
