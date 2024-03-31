@@ -83,12 +83,13 @@ class Game:
             self.process_input(event)
 
     def update(self):
-        """Update the game. Runs every frame.
-
-        Currently unused but in future this could handle animation frames and
-        any cool-downs/timers we may have.
-        """
-        pass
+        """Update the game. Runs every frame."""
+        mouse_position = Point(*pg.mouse.get_pos())
+        for surface in self.surfaces:
+            if surface[1].contains(mouse_position):
+                surface[0].update(mouse_position.relative_to(surface[1]))
+            else:
+                surface[0].update(None)
 
     def render(self):
         """Draw all the surfaces to the display."""

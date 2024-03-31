@@ -13,7 +13,7 @@ from resources import Queue, Resource
 from templates import Surface
 from tiles import Tile
 
-common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200)}
+common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200), "CYAN": (0, 200, 200)}
 
 
 class Grid:
@@ -93,6 +93,8 @@ class RenderGrid(Surface):
         # TODO: Draw the border on the outer canvas instead of on the grid.
         surface_size = Point(self.grid.width * self.cell_size + 2, self.grid.height * self.cell_size + 2)
         self.surface = pygame.Surface(surface_size)
+        # The grid coordinate is the mouse is currently over.
+        self.moused_tile: GridPoint | None = None
 
     def get_name(self):
         return "Grid"
@@ -101,18 +103,39 @@ class RenderGrid(Surface):
         """Return Grid coordinate of point in pixels."""
         return GridPoint(int(point.x // self.cell_size), int(point.y // self.cell_size))
 
+    def grid_to_pixels(self, grid_point: Point) -> Point:
+        return Point(grid_point.x * self.cell_size, grid_point.y * self.cell_size)
+
+    def draw_line(self, start: Point, end: Point, color=common_colours["BLUE"], line_width=2):
+        pygame.draw.line(self.surface, color, start, end, line_width)
+
+    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["CYAN"]):
+        size = size or Point(self.cell_size, self.cell_size)
+        width = Point(size.x, 0)
+        height = Point(0, size.y)
+
+        def draw_line(s: Point, e: Point):
+            self.draw_line(start=s, end=e, color=color)
+
+        draw_line(start, start + width)
+        draw_line(start, start + height)
+        draw_line(start + width, start + size)
+        draw_line(start + height, start + size)
+
     def draw_grid_surface(self):
-        """Draw the grid lines in the center of the display."""
-        line_width = 2
+        """Draw grid lines."""
         max_x, max_y = self.surface.get_size()
         for x in range(0, max_x, self.cell_size):
-            pygame.draw.line(self.surface, common_colours["BLUE"], (x, 0), (x, max_y), line_width)
+            self.draw_line(Point(x, 0), Point(x, max_y))
 
         for y in range(0, max_y, self.cell_size):
-            pygame.draw.line(self.surface, common_colours["BLUE"], (0, y), (max_x, y), line_width)
+            self.draw_line(Point(0, y), Point(max_x, y))
 
-        pygame.draw.line(self.surface, common_colours["BLUE"], (0, max_y), (max_x, max_y), line_width)
-        pygame.draw.line(self.surface, common_colours["BLUE"], (max_x, 0), (max_x, max_y), line_width)
+        self.draw_line(Point(0, max_y), Point(max_x, max_y))
+        self.draw_line(Point(max_x, 0), Point(max_x, max_y))
+
+    def draw_cursor(self):
+        self.draw_box(self.grid_to_pixels(self.moused_tile))
 
     def draw_tile(self, thing: Type[Resource] | Type[Building], grid_coord: GridPoint):
         asset_size = Point(*thing.image().get_size())
@@ -131,6 +154,8 @@ class RenderGrid(Surface):
 
     def render(self) -> pygame.Surface:
         self.draw_grid_surface()
+        if self.moused_tile:
+            self.draw_cursor()
         self.draw_tiles()
         return self.surface
 
@@ -145,6 +170,14 @@ class World(Surface):
         self.grid = Grid(grid_size)
         self.render_grid = RenderGrid(self.grid, cell_size)
         self.world_surface = pygame.Surface((width, height))
+
+    def update(self, mouse_position: Point | None):
+        if mouse_position:
+            moused_tile = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
+            if self.grid.is_in_grid(moused_tile):
+                self.render_grid.moused_tile = moused_tile
+                return
+        self.render_grid.moused_tile = None
 
     def get_name(self) -> str:
         return self.name
