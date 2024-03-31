@@ -187,10 +187,15 @@ class World(Surface):
     def add_building(self, building: Type[Building], location: GridPoint):
         """Checks wheter a building can be done then places the building"""
         schematic = building.schematic
-        subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
-        self.validate_schematic(schematic, subgrid)
+        if self.grid.is_in_grid(location + schematic.size - GridPoint(1, 1)):
+            subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
+            if self.validate_schematic(schematic, subgrid):
+                cursor.set_state(CursorStates.BUILD_LOCATION)
+                # Freeze box display?
+        else:
+            logging.warning("Illegal move: Build schematic does not fit in map")
 
-        # Check for validity
-        # Asks for building
-        # Removes resources
-        # Places building
+    # def confirm_building(self, building: Type[Building], location: GridPoint):
+    # Confirm it's in build zone
+    # Remove all 'Things' from build area
+    # Place Building
