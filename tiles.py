@@ -8,8 +8,6 @@ import pygame as pg
 
 from thing import Thing
 
-# import structures
-
 
 class Tile:
     def __init__(self, contains: None | Type[Thing] = None):

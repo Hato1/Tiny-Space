@@ -74,7 +74,11 @@ class RenderGrid(Surface):
         self.draw_line(Point(max_x, 0), Point(max_x, max_y))
 
     def draw_cursor(self):
-        self.draw_box(self.grid_to_pixels(self.moused_tile))
+        for pos, tile in cursor.get_shape():
+            if tile.empty:
+                continue
+            location = self.moused_tile + pos
+            self.draw_box(self.grid_to_pixels(location))
 
     def draw_tile(self, thing: Type[Thing], grid_coord: GridPoint):
         asset_size = Point(*thing.image().get_size())

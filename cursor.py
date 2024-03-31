@@ -3,8 +3,12 @@ Handles the state of the cursor
 """
 
 from enum import Enum
+from typing import Type
 
 from buildings import Building
+from grid import Grid
+from resources import Iron
+from tiles import Tile
 
 
 class CursorStates(Enum):
@@ -16,19 +20,25 @@ class CursorStates(Enum):
 class Cursor:
     def __init__(self):
         self._state: CursorStates = CursorStates.RESOURCE_PLACE
-        self._selected_structure: type[Building] = None
+        self.selected_structure: Type[Building] | None = None
 
     def set_state(self, state: CursorStates):
         self._state = state
 
-    def set_building(self, building: type[Building]):
-        self._selected_structure = building
+    def set_building(self, building: Type[Building]):
+        self.selected_structure = building
 
     def get_state(self):
         return self._state
 
+    def get_shape(self) -> Grid:
+        if self._state == CursorStates.RESOURCE_PLACE:
+            return Grid(initial=[[Tile(Iron)]])
+        else:
+            return self.selected_structure.schematic
+
     def get_building(self):
-        return self._selected_structure
+        return self.selected_structure
 
 
 cursor = Cursor()

@@ -40,7 +40,7 @@ class CustomFormatter(logging.Formatter):
 LEVELS = {
     "DEBUG": 10,
     "INFO": 20,
-    "WARNING:": 30,
+    "WARNING": 30,
     "ERROR": 40,
     "CRITICAL": 50,
 }
@@ -48,8 +48,8 @@ LEVELS = {
 args = sys.argv
 try:
     arg = sys.argv[1]
-    if arg in LEVELS:
-        LOG_LEVEL = LEVELS[arg]
+    if LOG_LEVEL := LEVELS.get(arg):
+        pass
     else:
         LOG_LEVEL = int(sys.argv[1])
 except (IndexError, ValueError):
