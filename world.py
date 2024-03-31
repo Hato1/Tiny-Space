@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterator, Type, overload
+from typing import Type
 
 import pygame
 
@@ -14,7 +14,7 @@ from grid import Grid
 from helpers import ORTHOGONAL, GridPoint, Point
 from resources import Queue, Resource
 from templates import Surface
-from tiles import Tile
+from thing import Thing
 
 common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200), "CYAN": (0, 200, 200)}
 
@@ -75,7 +75,7 @@ class RenderGrid(Surface):
     def draw_cursor(self):
         self.draw_box(self.grid_to_pixels(self.moused_tile))
 
-    def draw_tile(self, thing: Type[Resource] | Type[Building], grid_coord: GridPoint):
+    def draw_tile(self, thing: Type[Thing], grid_coord: GridPoint):
         asset_size = Point(*thing.image().get_size())
         self.surface.blit(
             thing.image(),
@@ -166,11 +166,11 @@ class World(Surface):
         logging.info(f"Schem {schematic.size}")
         logging.info(f"Subgrid {subgrid.size}")
 
-        for schematic_tile, grid_tile in zip(schematic, subgrid):
+        for schematic_tile, grid_tile in zip(schematic, subgrid, strict=True):
             logging.info(f"Schem Tile {schematic_tile}")
             logging.info(f"Subgrid Tile {grid_tile}")
 
-    def add_building(self, building: Building, location: GridPoint):
+    def add_building(self, building: Type[Building], location: GridPoint):
         """Checks wheter a building can be done then places the building"""
         schematic = building.schematic
         subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)

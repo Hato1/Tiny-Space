@@ -19,7 +19,7 @@ class Tile:
 
     @property
     def empty(self) -> bool:
-        return type(self.contains) != type(Thing)
+        return type(self.contains) is type(Thing)
 
     @property
     def full(self) -> bool:

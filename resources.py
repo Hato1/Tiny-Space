@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import random
-from pathlib import Path
 from typing import Type
-
-import pygame as pg
 
 from thing import Thing
 

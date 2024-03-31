@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import logging
-from typing import Iterator, Type, overload
+from typing import Iterator, overload
 
 from helpers import GridPoint, Point
 from tiles import Tile

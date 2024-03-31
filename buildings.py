@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-import pygame as pg
-
 from grid import Grid
-from helpers import GridPoint
 from resources import Aerofoam, Iron, Oil
 from thing import Thing
 from tiles import Tile
@@ -17,8 +12,8 @@ class Building(Thing):
     schematic: Grid = None
 
 
-def grid_from_transposed(schematic: list[list[Thing]]):
-    transpose = [list(i) for i in zip(*schematic)]
+def grid_from_transposed(schematic: list[list[Tile]]):
+    transpose = [list(i) for i in zip(*schematic, strict=True)]
     return Grid(initial=transpose)
 
 
