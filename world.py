@@ -23,6 +23,7 @@ common_colours = {
     "BLUE": (30, 30, 200),
     "CYAN": (0, 200, 200),
     "GREEN": (0, 200, 0),
+    "RED": (200, 0, 0),
 }
 
 
@@ -82,9 +83,12 @@ class RenderGrid(Surface):
     def draw_cursor(self):
         color = common_colours["CYAN"]
         if b := cursor.get_building():
-            subgrid = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
-            if validate_schematic(b.schematic, subgrid):
-                color = common_colours["GREEN"]
+            if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
+                subgrid = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
+                if validate_schematic(b.schematic, subgrid):
+                    color = common_colours["GREEN"]
+            else:
+                color = common_colours["RED"]
         for pos, tile in cursor.get_shape():
             if tile.empty:
                 continue
