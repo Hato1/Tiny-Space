@@ -18,7 +18,8 @@ class Building(Thing):
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
-        cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
+        if cls.schematic:
+            cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
 
 
 def grid_from_transposed(schematic: list[list[Tile]]):

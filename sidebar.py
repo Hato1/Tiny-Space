@@ -55,7 +55,7 @@ class SchematicBook(Surface):
     def __init__(self, width):
         self.height = width
         self.surface = pg.Surface((width, self.height))
-        self.visible_buildings = [b for b in Building.BUILDING_REGISTRY if b.schematic]
+        self.visible_buildings = Building.BUILDING_REGISTRY
 
     def get_name(self) -> str:
         return "SchematicBook"
