@@ -12,7 +12,7 @@ import pygame
 from buildings import Base, Building
 from cursor import CursorStates, cursor
 from grid import Grid
-from helpers import ORTHOGONAL, GridPoint, Point
+from helpers import ORTHOGONAL, Box, GridPoint, Point
 from resources import Queue, Resource
 from templates import Surface
 from thing import Thing
@@ -84,7 +84,7 @@ class RenderGrid(Surface):
         color = common_colours["CYAN"]
         if b := cursor.get_building():
             if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
-                subgrid = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
+                subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
                 if validate_schematic(b.schematic, subgrid):
                     color = common_colours["GREEN"]
             else:
@@ -118,14 +118,13 @@ class RenderGrid(Surface):
         return self.surface
 
 
-def validate_schematic(schematic: Grid, subgrid: Grid):
+def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     # Add check for in grid
     for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True):
         if schematic_tile.empty or schematic_tile.contains == grid_tile.contains:
             pass
         else:
             return False
-    logging.critical("SUCCESSSSSSSS")
     return True
 
 
@@ -140,6 +139,7 @@ class World(Surface):
         self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
         self.render_grid = RenderGrid(self.grid, cell_size)
         self.world_surface = pygame.Surface((width, height))
+        self.building_offset: GridPoint | None = None
 
     def update(self, mouse_position: Point | None):
         if mouse_position:
@@ -168,6 +168,8 @@ class World(Surface):
                         Queue.take()
                 case CursorStates.BUILD_OUTLINE:
                     self.add_building(selected_building, grid_coord)
+                case CursorStates.BUILD_LOCATION:
+                    self.confirm_building(selected_building, grid_coord)
                 case _:
                     logging.error("No state exists for the current cursor state!")
 
@@ -201,17 +203,31 @@ class World(Surface):
         return True
 
     def add_building(self, building: Type[Building], location: GridPoint):
-        """Checks whether a building can be done then places the building"""
+        """Checks whether a building can be build with selected resources"""
         schematic = building.schematic
         if self.grid.is_in_grid(location + schematic.size - GridPoint(1, 1)):
-            subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
+            subgrid, offset = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
             if validate_schematic(schematic, subgrid):
                 cursor.set_state(CursorStates.BUILD_LOCATION)
-                # Freeze box display?
+                self.building_offset = offset
+                return
         else:
             logging.warning("Illegal move: Build schematic does not fit in map")
+        cursor.set_state(CursorStates.RESOURCE_PLACE)
+        cursor.set_building(None)
+        self.building_offset = None
+        return
 
-    # def confirm_building(self, building: Type[Building], location: GridPoint):
-    # Confirm it's in build zone
-    # Remove all 'Things' from build area
-    # Place Building
+    def confirm_building(self, building: Type[Building], location: GridPoint):
+        # Maintain outline
+        valid_range = Box(
+            self.building_offset.x, self.building_offset.y, building.schematic.size.x, building.schematic.size.y
+        )
+        if valid_range.contains(location):
+            if self.grid[location].contains:
+                # TODO Remove all things with in building schematic coverage
+                self.grid[location].contains = building
+
+        cursor.set_state(CursorStates.RESOURCE_PLACE)
+        cursor.set_building(None)
+        self.building_offset = None

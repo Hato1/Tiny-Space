@@ -45,14 +45,14 @@ class Grid:
         """Return whether point lies in the grid"""
         return 0 <= point.x < self.size.x and 0 <= point.y < self.size.y
 
-    def get_subgrid(self, x, y, width, height) -> Grid:
+    def get_subgrid(self, x, y, width, height) -> tuple[Grid, GridPoint]:
         """Return a Grid consisting of a subgrid of self"""
         sub_list = []
         for column in self._grid[x : x + width]:
             sub_list.append(column[y : y + height])
         subgrid = Grid(initial=sub_list[:])
         assert subgrid.size == Point(width, height), f"{subgrid.size} is not equal to {Point(width, height)}!"
-        return subgrid
+        return subgrid, GridPoint(x, y)
 
     @property
     def height(self) -> int:

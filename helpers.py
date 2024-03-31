@@ -55,7 +55,7 @@ class Box(NamedTuple):
         return self.y + self.height
 
     def contains(self, point: Point) -> bool:
-        if self.x < point.x < self.max_x and self.y < point.y < self.max_y:
+        if self.x <= point.x < self.max_x and self.y <= point.y < self.max_y:
             return True
         return False
 
