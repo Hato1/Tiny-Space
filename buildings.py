@@ -7,6 +7,7 @@ from tiles import Tile
 
 
 class Building(Thing):
+    name = "Nonetype"
     subdir = "buildings"
 
     schematic: Grid = None
@@ -18,10 +19,12 @@ def grid_from_transposed(schematic: list[list[Tile]]):
 
 
 class Base(Building):
+    name = "Base"
     pass
 
 
 class WardenOutpost(Building):
+    name = "Warden Outpost"
     schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
 
     schematic = grid_from_transposed(schematic_list)

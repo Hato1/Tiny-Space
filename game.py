@@ -5,6 +5,8 @@ from enum import Enum
 
 import pygame as pg
 
+from buildings import WardenOutpost
+from cursor import CursorStates, cursor
 from helpers import Box, Point
 from sidebar import Sidebar
 from templates import Surface
@@ -52,8 +54,11 @@ class Game:
                 self.reset()
             # These numbers can be used for Debug commands.
             case pg.K_1:
+                cursor.set_state(CursorStates.RESOURCE_PLACE)
                 logging.info(1)
             case pg.K_2:
+                cursor.set_state(CursorStates.BUILD_OUTLINE)
+                cursor.set_building(WardenOutpost)
                 logging.info(2)
             case pg.K_3:
                 logging.info(3)

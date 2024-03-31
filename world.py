@@ -9,7 +9,8 @@ from typing import Type
 
 import pygame
 
-from buildings import Base, Building, WardenOutpost
+from buildings import Base, Building
+from cursor import CursorStates, cursor
 from grid import Grid
 from helpers import ORTHOGONAL, GridPoint, Point
 from resources import Queue, Resource
@@ -126,12 +127,19 @@ class World(Surface):
 
     def process_inputs(self, mouse_position: Point):
         grid_coord = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
+        cursor_state = cursor.get_state()
+        selected_building = cursor.get_building()
         # Fails if clicked elsewhere on the canvas.
         if self.grid.is_in_grid(grid_coord):
-            resource = Queue.peek()
-            if self.fill_tile(grid_coord, resource):
-                Queue.take()
-        self.add_building(WardenOutpost, grid_coord)
+            match cursor_state:
+                case CursorStates.RESOURCE_PLACE:
+                    resource = Queue.peek()
+                    if self.fill_tile(grid_coord, resource):
+                        Queue.take()
+                case CursorStates.BUILD_OUTLINE:
+                    self.add_building(selected_building, grid_coord)
+                case _:
+                    logging.error("No state exists for the current cursor state!")
 
     def render(self) -> pygame.Surface:
         """Blit the grid to the center of the canvas."""
@@ -163,12 +171,14 @@ class World(Surface):
         return True
 
     def validate_schematic(self, schematic: Grid, subgrid: Grid):
-        logging.info(f"Schem {schematic.size}")
-        logging.info(f"Subgrid {subgrid.size}")
-
-        for schematic_tile, grid_tile in zip(schematic, subgrid, strict=True):
-            logging.info(f"Schem Tile {schematic_tile}")
-            logging.info(f"Subgrid Tile {grid_tile}")
+        # Add check for in grid
+        for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True):
+            if schematic_tile.empty or schematic_tile.contains == grid_tile.contains:
+                pass
+            else:
+                return False
+        logging.critical("SUCCESSSSSSSS")
+        return True
 
     def add_building(self, building: Type[Building], location: GridPoint):
         """Checks wheter a building can be done then places the building"""
