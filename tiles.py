@@ -6,21 +6,20 @@ from typing import Type
 
 import pygame as pg
 
-from buildings import Building
-from resources import Resource
+from thing import Thing
 
 # import structures
 
 
 class Tile:
-    def __init__(self, contains: None | Type[Resource] | Type[Building] = None):
+    def __init__(self, contains: None | Type[Thing] = None):
         self.name = "UNUSED"
         self.score = 0
         self.contains = contains
 
     @property
     def empty(self) -> bool:
-        return type(self.contains) not in [type(Resource), type(Building)]
+        return type(self.contains) != type(Thing)
 
     @property
     def full(self) -> bool:
