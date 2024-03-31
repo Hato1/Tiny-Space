@@ -32,8 +32,8 @@ class GridPoint(Point): ...
 
 
 # Movement vectors
-LEFT = GridPoint(1, 0)
-RIGHT = GridPoint(-1, 0)
+LEFT = GridPoint(-1, 0)
+RIGHT = GridPoint(1, 0)
 DOWN = GridPoint(0, 1)
 UP = GridPoint(0, -1)
 

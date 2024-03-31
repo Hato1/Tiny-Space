@@ -4,6 +4,8 @@ Handles the state of the cursor
 
 from enum import Enum
 
+from buildings import Building
+
 
 class CursorStates(Enum):
     RESOURCE_PLACE = 1
@@ -14,6 +16,7 @@ class CursorStates(Enum):
 class Cursor:
     def __init__(self):
         self._state = CursorStates.RESOURCE_PLACE
+        self.selected_structure: Building
 
     def set_state(self, state: CursorStates):
         self._state = state

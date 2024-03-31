@@ -2,6 +2,8 @@
 
 """
 
+from __future__ import annotations
+
 import logging
 from typing import Iterator, Type, overload
 
@@ -50,6 +52,14 @@ class Grid:
         """Return whether point lies in the grid"""
         return 0 <= point.x < self.size.x and 0 <= point.y < self.size.y
 
+    def get_subgrid(self, x, y, width, height) -> Grid:
+        subgrid = Grid(GridPoint(x=width, y=height))
+        sub_list = []
+        for column in self._grid[x : x + width]:
+            sub_list.append(column[y : y + height])
+        subgrid._grid = sub_list[:]
+        return subgrid
+
     @property
     def height(self) -> int:
         """Get the number of rows"""
@@ -76,8 +86,8 @@ class Grid:
         raise ValueError
 
     def __iter__(self) -> Iterator[tuple[GridPoint, Tile]]:
-        for x in range(self.width):
-            for y in range(self.height):
+        for y in range(self.height):
+            for x in range(self.width):
                 yield GridPoint(x, y), self[x, y]
 
 
