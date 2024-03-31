@@ -4,25 +4,22 @@ from pathlib import Path
 
 import pygame as pg
 
+from grid import Grid
+from helpers import GridPoint
 from resources import Aerofoam, Iron, Oil
+from thing import Thing
+from tiles import Tile
 
 
-class BuildingMeta(type):
-    def __repr__(self):
-        return self.__name__
+class Building(Thing):
+    subdir = "buildings"
+
+    schematic: Grid = None
 
 
-class Building(metaclass=BuildingMeta):
-
-    @classmethod
-    def image(cls):
-        return pg.image.load(cls.get_file())
-
-    @classmethod
-    def get_file(cls) -> Path:
-        file = Path(f"assets/structures/{cls}.png")
-        assert file.exists(), f"Could not find resource: {file!r}"
-        return file
+def grid_from_transposed(schematic: list[list[Thing]]):
+    transpose = [list(i) for i in zip(*schematic)]
+    return Grid(initial=transpose)
 
 
 class Base(Building):
@@ -30,5 +27,6 @@ class Base(Building):
 
 
 class WardenOutpost(Building):
-    def __init__(self):
-        self.shape = [[Iron, Oil, Iron], [None, Aerofoam, None]]
+    schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
+
+    schematic = grid_from_transposed(schematic_list)
