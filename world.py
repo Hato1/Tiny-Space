@@ -9,86 +9,14 @@ from typing import Iterator, Type, overload
 
 import pygame
 
-from buildings import Base, Building
+from buildings import Base, Building, WardenOutpost
+from grid import Grid
 from helpers import ORTHOGONAL, GridPoint, Point
 from resources import Queue, Resource
 from templates import Surface
 from tiles import Tile
 
 common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200), "CYAN": (0, 200, 200)}
-
-
-class Grid:
-    """Low level generic object representing a 2d grid that can be treated similarly to a list of lists.
-
-    As a rule of thumb, it shouldn't contain any logic specific to the game.
-
-    You can index into the grid like so:
-    g = Grid()
-    g[3,4]
-
-    You can iterate through all tiles in the grid like this:
-    g = Grid()
-    for point, tile in g:
-        assert g[point] == tile
-
-    Methods:
-        is_in_grid(self, point: GridPoint) -> bool
-        height(self) -> int
-        width(self) -> int
-    """
-
-    def __init__(self, size: GridPoint):
-        self.size: GridPoint = size
-        self._grid: list[list[Tile]]
-        self._initialise_grid()
-
-    def _initialise_grid(self):
-        """Set tiles to a 2d grid according to grid_size and place the Base structure in the center tile."""
-        self._grid = [[Tile() for _ in range(self.size.y)] for _ in range(self.size.x)]
-        self[self.size.x // 2, self.size.y // 2].contains = Base
-
-    def is_in_grid(self, point: GridPoint) -> bool:
-        """Return whether point lies in the grid"""
-        return 0 <= point.x < self.size.x and 0 <= point.y < self.size.y
-
-    def get_subgrid(self, x, y, width, height) -> Grid:
-        subgrid = Grid(GridPoint(x=width, y=height))
-        sub_list = []
-        for column in self._grid[x : x + width]:
-            sub_list.append(column[y : y + height])
-        subgrid._grid = sub_list[:]
-        return subgrid
-
-    @property
-    def height(self) -> int:
-        """Get the number of rows"""
-        return self.size.y
-
-    @property
-    def width(self) -> int:
-        """Get the number of cols"""
-        return self.size.x
-
-    @overload
-    def __getitem__(self, index: int) -> list[Tile]: ...
-
-    @overload
-    def __getitem__(self, index: tuple | GridPoint) -> Tile: ...
-
-    def __getitem__(self, index: int | tuple) -> list[Tile] | Tile:
-        """Retrieve elements of the map at the given row or (row, col) pair"""
-        if isinstance(index, int):
-            return self._grid[index]
-        elif isinstance(index, (tuple, GridPoint)):
-            index = GridPoint(*index)
-            return self._grid[index.x][index.y]
-        raise ValueError
-
-    def __iter__(self) -> Iterator[tuple[GridPoint, Tile]]:
-        for y in range(self.height):
-            for x in range(self.width):
-                yield GridPoint(x, y), self[x, y]
 
 
 class RenderGrid(Surface):
@@ -171,13 +99,14 @@ class RenderGrid(Surface):
 
 
 class World(Surface):
-    default_grid_size = GridPoint(7, 7)
+    default_grid_size = GridPoint(5, 7)
 
     def __init__(self, width: int, height: int, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
         assert grid_size.x * cell_size < width, "Grid too wide for display area!"
         assert grid_size.y * cell_size < height, "Grid too tall for display area!"
         self.name = "World"
         self.grid = Grid(grid_size)
+        self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
         self.render_grid = RenderGrid(self.grid, cell_size)
         self.world_surface = pygame.Surface((width, height))
 
@@ -202,6 +131,7 @@ class World(Surface):
             resource = Queue.peek()
             if self.fill_tile(grid_coord, resource):
                 Queue.take()
+        self.add_building(WardenOutpost, grid_coord)
 
     def render(self) -> pygame.Surface:
         """Blit the grid to the center of the canvas."""
@@ -231,3 +161,22 @@ class World(Surface):
             return False
         self.grid[point].contains = thing
         return True
+
+    def validate_schematic(self, schematic: Grid, subgrid: Grid):
+        logging.info(f"Schem {schematic.size}")
+        logging.info(f"Subgrid {subgrid.size}")
+
+        for schematic_tile, grid_tile in zip(schematic, subgrid):
+            logging.info(f"Schem Tile {schematic_tile}")
+            logging.info(f"Subgrid Tile {grid_tile}")
+
+    def add_building(self, building: Building, location: GridPoint):
+        """Checks wheter a building can be done then places the building"""
+        schematic = building.schematic
+        subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
+        self.validate_schematic(schematic, subgrid)
+
+        # Check for validity
+        # Asks for building
+        # Removes resources
+        # Places building

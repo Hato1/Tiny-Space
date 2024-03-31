@@ -6,25 +6,13 @@ from typing import Type
 
 import pygame as pg
 
-
-class ResourceMeta(type):
-    def __repr__(self):
-        return self.__name__
+from thing import Thing
 
 
-class Resource(metaclass=ResourceMeta):
+class Resource(Thing):
+    subdir = "resources"
 
     RESOURCE_REGISTRY: list[Type[Resource]] = []
-
-    @classmethod
-    def image(cls):
-        return pg.image.load(cls.get_file())
-
-    @classmethod
-    def get_file(cls) -> Path:
-        file = Path(f"assets/resources/{cls}.png")
-        assert file.exists(), f"Could not find resource: {file!r}"
-        return file
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
