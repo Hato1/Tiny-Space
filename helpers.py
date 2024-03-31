@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from enum import Enum
 from typing import NamedTuple, Self
 
 
@@ -71,3 +73,53 @@ def handle_mouse_collision(surfaces, mouse_position: Point):
 class classproperty(property):
     def __get__(self, owner_self, owner_cls):
         return self.fget(owner_cls)
+
+
+class Event(Enum):
+    PlaceResource = 1
+
+
+class Notifier:
+    """A simple Observer pattern implementation.
+
+    Objects can be subclassed from Observer
+    """
+
+    # List of subscribers.
+    _observers: list[Observer] = []
+
+    @classmethod
+    def attach(cls, observer: Observer) -> None:
+        cls._observers.append(observer)
+
+    @classmethod
+    def detach(cls, observer: Observer) -> None:
+        cls._observers.remove(observer)
+
+    @classmethod
+    def notify(cls, event: Event) -> None:
+        """
+        Trigger an update in each subscriber.
+        """
+        for observer in cls._observers:
+            observer.event_listener(event)
+
+
+Notify = Notifier.notify
+
+
+class Observer(ABC):
+    """
+    The Observer interface declares the update method, used by subjects.
+    """
+
+    def __init__(self, **kwargs):
+        Notifier.attach(self)
+        super().__init__(**kwargs)
+
+    @abstractmethod
+    def event_listener(self, event: Event) -> None:
+        """
+        Receive update from subject.
+        """
+        raise NotImplementedError

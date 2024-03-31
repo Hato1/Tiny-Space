@@ -60,6 +60,7 @@ class ResourceQueue:
         try:
             return self.peek_n(n)
         finally:
+            self.last_resource_taken = self.queue[n - 1]
             self.queue = self.queue[n:]
 
     def take(self):

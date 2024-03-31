@@ -12,7 +12,7 @@ import pygame
 from buildings import Base, Building
 from cursor import CursorStates, cursor
 from grid import Grid
-from helpers import ORTHOGONAL, Box, GridPoint, Point
+from helpers import ORTHOGONAL, Box, Event, GridPoint, Notify, Point
 from resources import Queue, Resource
 from templates import Surface
 from thing import Thing
@@ -166,6 +166,7 @@ class World(Surface):
                     resource = Queue.peek()
                     if self.fill_tile(grid_coord, resource):
                         Queue.take()
+                        Notify(Event.PlaceResource)
                 case CursorStates.BUILD_OUTLINE:
                     self.add_building(selected_building, grid_coord)
                 case CursorStates.BUILD_LOCATION:

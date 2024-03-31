@@ -3,11 +3,13 @@
 The sidebar contains the players score, resource queue, and the schematic library.
 """
 
+from typing import Type
+
 import pygame as pg
 
 import resources
 from buildings import Building
-from helpers import Point
+from helpers import Event, Observer, Point
 from templates import Surface
 from world import RenderGrid
 
@@ -32,20 +34,41 @@ class Scoreboard(Surface):
         pass
 
 
-class ResourceQueueUI(Surface):
+class ResourceQueueUI(Surface, Observer):
     def __init__(self, width):
+        super().__init__()
         self.score = 0
         self.height = 50
         self.surface = pg.Surface((width, self.height))
+        self.resources_to_render = 5
+        self.resource_queue_head: Type[resources.Resource] = resources.Resource
+        self.last_resource_placed_time: int = -100000
+
+    def event_listener(self, event: Event):
+        if event == Event.PlaceResource:
+            self.last_resource_placed_time = pg.time.get_ticks()
 
     def get_name(self) -> str:
         return "Scoreboard"
 
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 255))
-        for i, resource in enumerate(resources.Queue.peek_n(3)):
-            self.surface.blit(resource.image(), (20 + (40 * i), 10))
+        distance_between_resources = 40
+        resources_to_display = resources.Queue.peek_n(self.resources_to_render)
+        time_delta = pg.time.get_ticks() - self.last_resource_placed_time
+        animation_time = 1000
+        offset = 0
+
+        if time_delta < animation_time:
+            resources_to_display.insert(0, resources.Queue.last_resource_taken)
+            offset = -distance_between_resources * (time_delta / 1000)
+
+        for i, resource in enumerate(resources_to_display):
+            self.surface.blit(resource.image(), (10 + offset + (distance_between_resources * i), 10))
         return self.surface
+
+    def update(self, _):
+        pass
 
     def process_inputs(self, mouse_position: Point):
         pass
