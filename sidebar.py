@@ -1,6 +1,6 @@
 """Handles the rendering & input to the right-hand sidebar.
 
-The sidebar contains the players score, resource queue, and the schematics library.
+The sidebar contains the players score, resource queue, and the schematic library.
 """
 
 import pygame as pg

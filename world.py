@@ -17,7 +17,13 @@ from resources import Queue, Resource
 from templates import Surface
 from thing import Thing
 
-common_colours = {"BLACK": (0, 0, 0), "WHITE": (200, 200, 200), "BLUE": (30, 30, 200), "CYAN": (0, 200, 200)}
+common_colours = {
+    "BLACK": (0, 0, 0),
+    "WHITE": (200, 200, 200),
+    "BLUE": (30, 30, 200),
+    "CYAN": (0, 200, 200),
+    "GREEN": (0, 200, 0),
+}
 
 
 class RenderGrid(Surface):
@@ -48,7 +54,7 @@ class RenderGrid(Surface):
     def draw_line(self, start: Point, end: Point, color=common_colours["BLUE"], line_width=2):
         pygame.draw.line(self.surface, color, start, end, line_width)
 
-    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["CYAN"]):
+    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["BLUE"]):
         size = size or Point(self.cell_size, self.cell_size)
         width = Point(size.x, 0)
         height = Point(0, size.y)
@@ -74,11 +80,16 @@ class RenderGrid(Surface):
         self.draw_line(Point(max_x, 0), Point(max_x, max_y))
 
     def draw_cursor(self):
+        color = common_colours["CYAN"]
+        if b := cursor.get_building():
+            subgrid = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
+            if validate_schematic(b.schematic, subgrid):
+                color = common_colours["GREEN"]
         for pos, tile in cursor.get_shape():
             if tile.empty:
                 continue
             location = self.moused_tile + pos
-            self.draw_box(self.grid_to_pixels(location))
+            self.draw_box(self.grid_to_pixels(location), color=color)
 
     def draw_tile(self, thing: Type[Thing], grid_coord: GridPoint):
         asset_size = Point(*thing.image().get_size())
@@ -101,6 +112,17 @@ class RenderGrid(Surface):
             self.draw_cursor()
         self.draw_tiles()
         return self.surface
+
+
+def validate_schematic(schematic: Grid, subgrid: Grid):
+    # Add check for in grid
+    for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True):
+        if schematic_tile.empty or schematic_tile.contains == grid_tile.contains:
+            pass
+        else:
+            return False
+    logging.critical("SUCCESSSSSSSS")
+    return True
 
 
 class World(Surface):
@@ -174,22 +196,12 @@ class World(Surface):
         self.grid[point].contains = thing
         return True
 
-    def validate_schematic(self, schematic: Grid, subgrid: Grid):
-        # Add check for in grid
-        for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True):
-            if schematic_tile.empty or schematic_tile.contains == grid_tile.contains:
-                pass
-            else:
-                return False
-        logging.critical("SUCCESSSSSSSS")
-        return True
-
     def add_building(self, building: Type[Building], location: GridPoint):
-        """Checks wheter a building can be done then places the building"""
+        """Checks whether a building can be done then places the building"""
         schematic = building.schematic
         if self.grid.is_in_grid(location + schematic.size - GridPoint(1, 1)):
             subgrid = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
-            if self.validate_schematic(schematic, subgrid):
+            if validate_schematic(schematic, subgrid):
                 cursor.set_state(CursorStates.BUILD_LOCATION)
                 # Freeze box display?
         else:
