@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Type
+from typing import Literal, Type
 
 from grid import Grid
 from resources import Aerofoam, Crystal, Iron, Oil
@@ -9,17 +9,25 @@ from tiles import Tile
 
 
 class Building(Thing):
-    name = "Nonetype"
+    name = "Building Baseclass"
     subdir = "buildings"
 
-    schematic: Grid = None
+    _schematic: Grid = None
 
     BUILDING_REGISTRY: list[Type[Building]] = []
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
-        if cls.schematic:
+        if cls._schematic:
             cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
+
+    @classmethod
+    def get_schematic(cls, rotation: Literal[0, 1, 2, 3] = 0) -> Grid:
+        """Get the schematic with the desired rotation."""
+        schematic = cls._schematic
+        for _ in range(rotation):
+            schematic.rotate()
+        return schematic
 
 
 def grid_from_transposed(schematic: list[list[Tile]]):
@@ -34,16 +42,16 @@ class Base(Building):
 class WardenOutpost(Building):
     name = "Warden Outpost"
     schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
-    schematic = grid_from_transposed(schematic_list)
+    _schematic = grid_from_transposed(schematic_list)
 
 
 class CommsTower(Building):
     name = "Comms Tower"
     schematic_list = [[Tile(Crystal), Tile(Iron), Tile(Crystal), Tile(Oil)]]
-    schematic = grid_from_transposed(schematic_list)
+    _schematic = grid_from_transposed(schematic_list)
 
 
 class ArsenicScrubber(Building):
     name = "Arsenic Scrubber"
     schematic_list = [[Tile(), Tile(Crystal)], [Tile(), Tile(Oil)], [Tile(Aerofoam), Tile(Iron)]]
-    schematic = grid_from_transposed(schematic_list)
+    _schematic = grid_from_transposed(schematic_list)

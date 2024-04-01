@@ -83,3 +83,6 @@ class Grid:
         for y in range(self.height):
             for x in range(self.width):
                 yield GridPoint(x, y), self[x, y]
+
+    def rotate(self):
+        self._grid = list(*zip(*self._grid[::-1], strict=True))

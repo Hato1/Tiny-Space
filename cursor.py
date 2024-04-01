@@ -35,7 +35,7 @@ class Cursor:
         if self._state == CursorStates.RESOURCE_PLACE:
             return Grid(initial=[[Tile(Iron)]])
         else:
-            return self.selected_structure.schematic
+            return self.selected_structure.get_schematic()
 
     def get_building(self):
         return self.selected_structure

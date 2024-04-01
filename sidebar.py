@@ -87,7 +87,7 @@ class SchematicBook(Surface):
         self.surface.fill((50, 50, 50))
         height = 15
         for building in self.visible_buildings:
-            render_grid = RenderGrid(building.schematic, 25)
+            render_grid = RenderGrid(building.get_schematic(), 25)
             surf = render_grid.render()
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))

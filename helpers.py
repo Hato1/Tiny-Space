@@ -6,6 +6,25 @@ from typing import NamedTuple, Self
 
 
 class Point(NamedTuple):
+    """A class representing a point with x and y coordinates.
+
+    Methods:
+    - relative_to: Returns a new Point object that is relative to a given Box object.
+    - __add__: Adds two Point objects or a Point object and a tuple.
+    - __sub__: Subtracts two Point objects or a Point object and a tuple.
+    - __mul__: Multiplies the Point object by a scalar.
+
+    Attributes:
+    - x: The x-coordinate of the point.
+    - y: The y-coordinate of the point.
+
+    Examples:
+        p1 = Point(1, 2)
+        p2 = Point(3, 4)
+        p3 = p1 + p2
+        # Output: P3=(4, 6)
+    """
+
     x: int
     y: int
 

@@ -85,7 +85,7 @@ class RenderGrid(Surface):
         if b := cursor.get_building():
             if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
                 subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
-                if validate_schematic(b.schematic, subgrid):
+                if validate_schematic(b.get_schematic(), subgrid):
                     color = common_colours["GREEN"]
             else:
                 color = common_colours["RED"]
@@ -205,7 +205,7 @@ class World(Surface):
 
     def add_building(self, building: Type[Building], location: GridPoint):
         """Checks whether a building can be build with selected resources"""
-        schematic = building.schematic
+        schematic = building.get_schematic()
         if self.grid.is_in_grid(location + schematic.size - GridPoint(1, 1)):
             subgrid, offset = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
             if validate_schematic(schematic, subgrid):
@@ -222,7 +222,10 @@ class World(Surface):
     def confirm_building(self, building: Type[Building], location: GridPoint):
         # Maintain outline
         valid_range = Box(
-            self.building_offset.x, self.building_offset.y, building.schematic.size.x, building.schematic.size.y
+            self.building_offset.x,
+            self.building_offset.y,
+            building.get_schematic().size.x,
+            building.get_schematic().size.y,
         )
         if valid_range.contains(location):
             if self.grid[location].contains:
