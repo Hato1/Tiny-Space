@@ -56,12 +56,12 @@ class ResourceQueueUI(Surface, Observer):
         distance_between_resources = 40
         resources_to_display = resources.Queue.peek_n(self.resources_to_render)
         time_delta = pg.time.get_ticks() - self.last_resource_placed_time
-        animation_time = 1000
+        animation_time = 250
         offset = 0
 
         if time_delta < animation_time:
             resources_to_display.insert(0, resources.Queue.last_resource_taken)
-            offset = -distance_between_resources * (time_delta / 1000)
+            offset = -distance_between_resources * (time_delta / animation_time)
 
         for i, resource in enumerate(resources_to_display):
             self.surface.blit(resource.image(), (10 + offset + (distance_between_resources * i), 10))
