@@ -82,10 +82,10 @@ class RenderGrid(Surface):
 
     def draw_cursor(self):
         color = common_colours["CYAN"]
-        if b := cursor.get_building():
+        if cursor.get_building():
             if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
                 subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
-                if validate_schematic(b.get_schematic(), subgrid):
+                if validate_schematic(cursor.get_shape(), subgrid):
                     color = common_colours["GREEN"]
             else:
                 color = common_colours["RED"]
@@ -158,7 +158,6 @@ class World(Surface):
     def process_inputs(self, mouse_position: Point):
         grid_coord = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
         cursor_state = cursor.get_state()
-        selected_building = cursor.get_building()
         # Fails if clicked elsewhere on the canvas.
         if self.grid.is_in_grid(grid_coord):
             match cursor_state:
@@ -168,9 +167,9 @@ class World(Surface):
                         Queue.take()
                         Notify(Event.PlaceResource)
                 case CursorStates.BUILD_OUTLINE:
-                    self.add_building(selected_building, grid_coord)
+                    self.add_building(grid_coord)
                 case CursorStates.BUILD_LOCATION:
-                    self.confirm_building(selected_building, grid_coord)
+                    self.confirm_building(grid_coord)
                 case _:
                     logging.error("No state exists for the current cursor state!")
 
@@ -203,9 +202,9 @@ class World(Surface):
         self.grid[point].contains = thing
         return True
 
-    def add_building(self, building: Type[Building], location: GridPoint):
+    def add_building(self, location: GridPoint):
         """Checks whether a building can be build with selected resources"""
-        schematic = building.get_schematic()
+        schematic = cursor.get_shape()
         if self.grid.is_in_grid(location + schematic.size - GridPoint(1, 1)):
             subgrid, offset = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
             if validate_schematic(schematic, subgrid):
@@ -219,18 +218,19 @@ class World(Surface):
         self.building_offset = None
         return
 
-    def confirm_building(self, building: Type[Building], location: GridPoint):
+    def confirm_building(self, location: GridPoint):
+        schematic = cursor.get_shape()
         # Maintain outline
         valid_range = Box(
             self.building_offset.x,
             self.building_offset.y,
-            building.get_schematic().size.x,
-            building.get_schematic().size.y,
+            schematic.size.x,
+            schematic.size.y,
         )
         if valid_range.contains(location):
             if self.grid[location].contains:
                 # TODO Remove all things with in building schematic coverage
-                self.grid[location].contains = building
+                self.grid[location].contains = cursor.get_building()
 
         cursor.set_state(CursorStates.RESOURCE_PLACE)
         cursor.set_building(None)

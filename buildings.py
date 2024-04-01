@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Type
+from typing import Type
 
 from grid import Grid
 from resources import Aerofoam, Crystal, Iron, Oil
@@ -22,12 +22,9 @@ class Building(Thing):
             cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
 
     @classmethod
-    def get_schematic(cls, rotation: Literal[0, 1, 2, 3] = 0) -> Grid:
+    def get_schematic(cls, rotation: int = 0) -> Grid:
         """Get the schematic with the desired rotation."""
-        schematic = cls._schematic
-        for _ in range(rotation):
-            schematic.rotate()
-        return schematic
+        return cls._schematic.rotate(rotation)
 
 
 def grid_from_transposed(schematic: list[list[Tile]]):
@@ -41,7 +38,8 @@ class Base(Building):
 
 class WardenOutpost(Building):
     name = "Warden Outpost"
-    schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
+    # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
+    schematic_list = [[Tile(Oil), Tile(Crystal), Tile(Crystal)], [Tile(), Tile(Aerofoam), Tile()]]
     _schematic = grid_from_transposed(schematic_list)
 
 

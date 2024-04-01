@@ -33,6 +33,24 @@ class Grid:
         else:
             self._initialise_grid(size)
 
+    def __eq__(self, other):
+        if not isinstance(other, Grid):
+            return False
+        for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True):
+            if pos1 != pos2 or tile1.contains != tile2.contains:
+                return False
+        return True
+
+    def __repr__(self):
+        string = "[["
+        row_count = 0
+        for pos, item in self:
+            if pos.y != row_count:
+                row_count = pos.y
+                string = string[:-2] + "], ["
+            string += f"{item.contains}, "
+        return string[:-2] + "]]"
+
     @property
     def size(self):
         return Point(len(self._grid), len(self._grid[0]))
@@ -84,5 +102,9 @@ class Grid:
             for x in range(self.width):
                 yield GridPoint(x, y), self[x, y]
 
-    def rotate(self):
-        self._grid = list(*zip(*self._grid[::-1], strict=True))
+    def rotate(self, times: int) -> Grid:
+        """Rotate by 90 degrees n times."""
+        grid: list[list[Tile]] = self._grid
+        for _ in range(times):
+            grid = list(zip(*grid[::-1], strict=True))  # type: ignore[arg-type]
+        return Grid(initial=grid)

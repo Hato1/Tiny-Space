@@ -22,3 +22,4 @@ def debug_2():
 
 def debug_3():
     logging.warning("Debug 3")
+    cursor.rotate()
