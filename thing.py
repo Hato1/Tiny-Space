@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import pygame as pg
@@ -10,6 +11,7 @@ class ThingMeta(type):
 
 class Thing(metaclass=ThingMeta):
     subdir: str = ""
+    file: Path | None = None
 
     @classmethod
     def image(cls):
@@ -17,6 +19,11 @@ class Thing(metaclass=ThingMeta):
 
     @classmethod
     def get_file(cls) -> Path:
+        if cls.file:
+            return cls.file
         file = Path("assets") / cls.subdir / f"{cls}.png"
-        assert file.exists(), f"Could not find resource: {file!r}"
+        if not file.exists():
+            logging.critical(f"Could not find resource: {file!r}")
+            file = Path("assets") / "error.png"
+        cls.file = file
         return file
