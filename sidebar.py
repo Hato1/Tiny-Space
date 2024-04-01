@@ -76,7 +76,7 @@ class ResourceQueueUI(Surface, Observer):
 
 class SchematicBook(Surface):
     def __init__(self, width):
-        self.height = width
+        self.height = 500
         self.surface = pg.Surface((width, self.height))
         self.visible_buildings = Building.BUILDING_REGISTRY
 
@@ -87,10 +87,19 @@ class SchematicBook(Surface):
         self.surface.fill((50, 50, 50))
         height = 15
         for building in self.visible_buildings:
+            font = pg.font.SysFont(None, 24)
+            img = font.render(f"{building.name}", True, (0, 0, 0))
+            rect = img.get_rect(center=self.surface.get_rect().center)
+            self.surface.blit(img, (rect[0], height))
+            height += img.get_height() + 5
+
             render_grid = RenderGrid(building.get_schematic(), 25)
-            surf = render_grid.render()
+            surf = render_grid.render(ignore_empty=True, background_color=(50, 50, 50))
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))
+            self.surface.blit(
+                building.image(), (5, height + surf.get_height() // 2 - building.image().get_height() // 2)
+            )
             height += surf.get_height() + 15
         return self.surface
 

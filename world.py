@@ -31,9 +31,7 @@ class RenderGrid(Surface):
     def __init__(self, grid: Grid, cell_size: int):
         self.cell_size = cell_size
         self.grid = grid
-        # Add an extra two pixels of padding to fit the lined border.
-        # TODO: Draw the border on the outer canvas instead of on the grid.
-        surface_size = Point(self.grid.width * self.cell_size + 2, self.grid.height * self.cell_size + 2)
+        surface_size = Point(self.grid.width * self.cell_size, self.grid.height * self.cell_size)
         self.surface = pygame.Surface(surface_size)
         # The grid coordinate is the mouse is currently over.
         self.moused_tile: GridPoint | None = None
@@ -55,30 +53,18 @@ class RenderGrid(Surface):
     def draw_line(self, start: Point, end: Point, color=common_colours["BLUE"], line_width=2):
         pygame.draw.line(self.surface, color, start, end, line_width)
 
-    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["BLUE"]):
+    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["BLUE"], width=1):
+        # If width is 0 then the box will be filled.
         size = size or Point(self.cell_size, self.cell_size)
-        width = Point(size.x, 0)
-        height = Point(0, size.y)
+        pygame.draw.rect(self.surface, color, (*start, *size), width=width)
 
-        def draw_line(s: Point, e: Point):
-            self.draw_line(start=s, end=e, color=color)
-
-        draw_line(start, start + width)
-        draw_line(start, start + height)
-        draw_line(start + width, start + size)
-        draw_line(start + height, start + size)
-
-    def draw_grid_surface(self):
+    def draw_grid_surface(self, ignore_empty=False):
         """Draw grid lines."""
-        max_x, max_y = self.surface.get_size()
-        for x in range(0, max_x, self.cell_size):
-            self.draw_line(Point(x, 0), Point(x, max_y))
-
-        for y in range(0, max_y, self.cell_size):
-            self.draw_line(Point(0, y), Point(max_x, y))
-
-        self.draw_line(Point(0, max_y), Point(max_x, max_y))
-        self.draw_line(Point(max_x, 0), Point(max_x, max_y))
+        for pos, tile in self.grid:
+            if ignore_empty and tile.empty:
+                continue
+            self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLACK"], width=0)
+            self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLUE"])
 
     def draw_cursor(self):
         color = common_colours["CYAN"]
@@ -93,12 +79,13 @@ class RenderGrid(Surface):
             if tile.empty:
                 continue
             location = self.moused_tile + pos
-            self.draw_box(self.grid_to_pixels(location), color=color)
+            self.draw_box(self.grid_to_pixels(location), color=color, width=3)
 
     def draw_tile(self, thing: Type[Thing], grid_coord: GridPoint):
-        asset_size = Point(*thing.image().get_size())
+        scaled = pygame.transform.scale(thing.image(), (self.cell_size // 1.5, self.cell_size // 1.5))
+        asset_size = Point(*scaled.get_size())
         self.surface.blit(
-            thing.image(),
+            scaled,
             (
                 (grid_coord.x + 0.5) * self.cell_size - asset_size.x // 2,
                 (grid_coord.y + 0.5) * self.cell_size - asset_size.y // 2,
@@ -110,8 +97,9 @@ class RenderGrid(Surface):
             if thing := tile.contains:
                 self.draw_tile(thing, point)
 
-    def render(self) -> pygame.Surface:
-        self.draw_grid_surface()
+    def render(self, ignore_empty=False, background_color=common_colours["BLUE"]) -> pygame.Surface:
+        self.surface.fill(background_color)
+        self.draw_grid_surface(ignore_empty)
         if self.moused_tile:
             self.draw_cursor()
         self.draw_tiles()
@@ -176,7 +164,12 @@ class World(Surface):
     def render(self) -> pygame.Surface:
         """Blit the grid to the center of the canvas."""
         self.world_surface.fill(common_colours["BLACK"])
+
         grid = self.render_grid.render()
+
+        x, y, width, height = self.get_render_grid_rect()
+        pygame.draw.rect(self.world_surface, common_colours["BLUE"], (x - 1, y - 1, width + 2, height + 2))
+
         self.world_surface.blit(grid, self.get_render_grid_rect())
         return self.world_surface
 
