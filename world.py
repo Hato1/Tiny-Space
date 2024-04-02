@@ -211,6 +211,15 @@ class World(Surface):
         self.building_offset = None
         return
 
+    def remove_things_in_schematic(self, schematic: Grid):
+        schematic = cursor.get_shape()
+        offset = self.building_offset
+        for row in range(schematic.size.y):
+            for column in range(schematic.size.x):
+                if schematic[column, row].contains:
+                    logging.info(f"Removing {self.grid[column + offset.x, row + offset.y].contains}")
+                    self.grid[column + offset.x, row + offset.y].contains = None
+
     def confirm_building(self, location: GridPoint):
         schematic = cursor.get_shape()
         # Maintain outline
@@ -222,6 +231,7 @@ class World(Surface):
         )
         if valid_range.contains(location):
             if self.grid[location].contains:
+                self.remove_things_in_schematic(schematic)
                 # TODO Remove all things with in building schematic coverage
                 self.grid[location].contains = cursor.get_building()
 
