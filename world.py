@@ -24,6 +24,7 @@ common_colours = {
     "CYAN": (0, 200, 200),
     "GREEN": (0, 200, 0),
     "RED": (200, 0, 0),
+    "GREY": (100, 100, 100),
 }
 
 
@@ -66,20 +67,38 @@ class RenderGrid(Surface):
             self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLACK"], width=0)
             self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLUE"])
 
-    def draw_cursor(self):
-        color = common_colours["CYAN"]
-        if cursor.get_building():
-            if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
-                subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
-                if validate_schematic(cursor.get_shape(), subgrid):
-                    color = common_colours["GREEN"]
-            else:
-                color = common_colours["RED"]
+    def draw_schematic(self, cursor_location: GridPoint, color: tuple[int, int, int]):
         for pos, tile in cursor.get_shape():
             if tile.empty:
                 continue
-            location = self.moused_tile + pos
+            location = cursor_location + pos
             self.draw_box(self.grid_to_pixels(location), color=color, width=3)
+
+    def draw_cursor(self):
+        color = common_colours["CYAN"]
+        cursor_location: GridPoint = self.moused_tile
+        match cursor.get_state():
+            case CursorStates.RESOURCE_PLACE:
+                color = common_colours["CYAN"]
+                self.draw_schematic(cursor_location, color)
+
+            case CursorStates.BUILD_OUTLINE:
+                if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
+                    subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
+                    if validate_schematic(cursor.get_shape(), subgrid):
+                        color = common_colours["GREEN"]
+                else:
+                    color = common_colours["RED"]
+                self.draw_schematic(cursor_location, color)
+
+            case CursorStates.BUILD_LOCATION:
+                cursor_location = cursor.get_building_location()
+                color = common_colours["GREEN"]
+                self.draw_schematic(cursor_location, color)
+                cursor_colour = common_colours["GREY"]
+                self.draw_box(self.grid_to_pixels(self.moused_tile), color=cursor_colour, width=5)
+            case _:
+                logging.error("Error: Cursor in invalid state")
 
     def draw_tile(self, thing: Type[Thing], grid_coord: GridPoint):
         scaled = pygame.transform.scale(thing.image(), (self.cell_size // 1.5, self.cell_size // 1.5))
@@ -127,7 +146,6 @@ class World(Surface):
         self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
         self.render_grid = RenderGrid(self.grid, cell_size)
         self.world_surface = pygame.Surface((width, height))
-        self.building_offset: GridPoint | None = None
 
     def update(self, mouse_position: Point | None):
         if mouse_position:
@@ -202,39 +220,38 @@ class World(Surface):
             subgrid, offset = self.grid.get_subgrid(location.x, location.y, schematic.size.x, schematic.size.y)
             if validate_schematic(schematic, subgrid):
                 cursor.set_state(CursorStates.BUILD_LOCATION)
-                self.building_offset = offset
+                cursor.set_building_location(offset)
                 return
         else:
             logging.warning("Illegal move: Build schematic does not fit in map")
         cursor.set_state(CursorStates.RESOURCE_PLACE)
         cursor.set_building(None)
-        self.building_offset = None
+        cursor.set_building_location(None)
         return
 
     def remove_things_in_schematic(self, schematic: Grid):
         schematic = cursor.get_shape()
-        offset = self.building_offset
+        offset = cursor.get_building_location()
         for row in range(schematic.size.y):
             for column in range(schematic.size.x):
                 if schematic[column, row].contains:
-                    logging.info(f"Removing {self.grid[column + offset.x, row + offset.y].contains}")
                     self.grid[column + offset.x, row + offset.y].contains = None
 
     def confirm_building(self, location: GridPoint):
         schematic = cursor.get_shape()
+        offset = cursor.get_building_location()
         # Maintain outline
         valid_range = Box(
-            self.building_offset.x,
-            self.building_offset.y,
+            offset.x,
+            offset.y,
             schematic.size.x,
             schematic.size.y,
         )
         if valid_range.contains(location):
             if self.grid[location].contains:
                 self.remove_things_in_schematic(schematic)
-                # TODO Remove all things with in building schematic coverage
                 self.grid[location].contains = cursor.get_building()
 
         cursor.set_state(CursorStates.RESOURCE_PLACE)
         cursor.set_building(None)
-        self.building_offset = None
+        cursor.set_building_location(None)
