@@ -12,6 +12,7 @@ class ThingMeta(type):
 class Thing(metaclass=ThingMeta):
     subdir: str = ""
     file: Path | None = None
+    score = 0
 
     @classmethod
     def image(cls):

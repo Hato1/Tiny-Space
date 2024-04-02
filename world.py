@@ -14,6 +14,7 @@ from cursor import CursorStates, cursor
 from grid import Grid
 from helpers import ORTHOGONAL, Box, Event, GridPoint, Notify, Point
 from resources import Queue, Resource
+from score import score
 from templates import Surface
 from thing import Thing
 
@@ -213,6 +214,14 @@ class World(Surface):
         self.grid[point].contains = thing
         return True
 
+    def calculate_score(self):
+        world_score = 0
+        for _pos, tile in self.grid:
+            if tile.contains:
+                if tile.contains.score:
+                    world_score += tile.contains.score
+        score.score = world_score
+
     def add_building(self, location: GridPoint):
         """Checks whether a building can be build with selected resources"""
         schematic = cursor.get_shape()
@@ -251,6 +260,7 @@ class World(Surface):
             if self.grid[location].contains:
                 self.remove_things_in_schematic(schematic)
                 self.grid[location].contains = cursor.get_building()
+                self.calculate_score()
 
         cursor.set_state(CursorStates.RESOURCE_PLACE)
         cursor.set_building(None)

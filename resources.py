@@ -11,6 +11,8 @@ class Resource(Thing):
 
     RESOURCE_REGISTRY: list[Type[Resource]] = []
 
+    score = 0
+
     @classmethod
     def __init_subclass__(cls, **kwargs):
         cls.RESOURCE_REGISTRY.append(cls)  # Add class to registry.

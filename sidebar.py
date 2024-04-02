@@ -10,13 +10,13 @@ import pygame as pg
 import resources
 from buildings import Building
 from helpers import Event, Observer, Point
+from score import score
 from templates import Surface
 from world import RenderGrid
 
 
 class Scoreboard(Surface):
     def __init__(self, width):
-        self.score = 0
         self.height = 50
         self.surface = pg.Surface((width, self.height))
 
@@ -26,7 +26,7 @@ class Scoreboard(Surface):
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 0))
         font = pg.font.SysFont(None, 24)
-        img = font.render(f"Score: {self.score}", True, (0, 0, 0))
+        img = font.render(f"Score: {score.score}", True, (0, 0, 0))
         self.surface.blit(img, (20, 20))
         return self.surface
 
@@ -37,7 +37,6 @@ class Scoreboard(Surface):
 class ResourceQueueUI(Surface, Observer):
     def __init__(self, width):
         super().__init__()
-        self.score = 0
         self.height = 50
         self.surface = pg.Surface((width, self.height))
         self.resources_to_render = 5
@@ -49,7 +48,7 @@ class ResourceQueueUI(Surface, Observer):
             self.last_resource_placed_time = pg.time.get_ticks()
 
     def get_name(self) -> str:
-        return "Scoreboard"
+        return "Resource Queue"
 
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 255))

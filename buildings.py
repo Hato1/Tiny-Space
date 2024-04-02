@@ -16,6 +16,8 @@ class Building(Thing):
 
     BUILDING_REGISTRY: list[Type[Building]] = []
 
+    score = 1
+
     @classmethod
     def __init_subclass__(cls, **kwargs):
         if cls._schematic:
@@ -41,6 +43,7 @@ class WardenOutpost(Building):
     # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
     schematic_list = [[Tile(Oil), Tile(Crystal), Tile(Crystal)], [Tile(), Tile(Aerofoam), Tile()]]
     _schematic = grid_from_transposed(schematic_list)
+    score = 5
 
 
 class CommsTower(Building):

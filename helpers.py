@@ -96,6 +96,7 @@ class classproperty(property):
 
 class Event(Enum):
     PlaceResource = 1
+    PlaceBuilding = 2
 
 
 class Notifier:
