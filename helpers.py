@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import NamedTuple, Self
+from typing import Any, Callable, NamedTuple, Self, TypeVar, cast
 
 
 class Point(NamedTuple):
@@ -28,8 +28,11 @@ class Point(NamedTuple):
     x: int
     y: int
 
-    def relative_to(self, box: Box) -> Self:
-        return self.__class__(self.x - box.x, self.y - box.y)
+    def relative_to(self, box: Box) -> Self | None:
+        relative = self.__class__(self.x - box.x, self.y - box.y)
+        if relative.x > box.max_x or relative.y > box.max_y:
+            return None
+        return relative
 
     def __add__(self, other: Point | tuple) -> Self:
         if isinstance(other, Point):
@@ -75,10 +78,33 @@ class Box(NamedTuple):
     def max_y(self):
         return self.y + self.height
 
-    def contains(self, point: Point) -> bool:
-        if self.x <= point.x < self.max_x and self.y <= point.y < self.max_y:
-            return True
-        return False
+    @property
+    def top_left(self):
+        return self.x, self.y
+
+    @property
+    def dims(self):
+        return self.width, self.height
+
+    def __contains__(self, other: Point | Box | Any) -> bool:
+        """Returns true if the point/box is enclosed inside of self."""
+        if isinstance(other, Point):
+            return all(
+                [
+                    self.x <= other.x <= self.max_x,
+                    self.y <= other.y <= self.max_y,
+                ]
+            )
+        elif isinstance(other, Box):
+            return all(
+                [
+                    self.x <= other.x,
+                    self.y <= other.y,
+                    self.max_x >= other.max_x,
+                    self.max_y >= other.max_y,
+                ]
+            )
+        raise ValueError
 
 
 def handle_mouse_collision(surfaces, mouse_position: Point):
@@ -92,6 +118,21 @@ def handle_mouse_collision(surfaces, mouse_position: Point):
 class classproperty(property):
     def __get__(self, owner_self, owner_cls):
         return self.fget(owner_cls)
+
+
+class DummyAttribute:
+    pass
+
+
+R = TypeVar("R")
+
+
+def abstract_attribute(obj: Callable[[Any], R] = None) -> R:
+    _obj = cast(Any, obj)
+    if obj is None:
+        _obj = DummyAttribute()
+    _obj.__is_abstract_attribute__ = True
+    return cast(R, _obj)
 
 
 class Event(Enum):

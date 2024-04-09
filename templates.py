@@ -1,24 +1,36 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import pygame as pg
 
-from helpers import Point
+from helpers import Box, Point, abstract_attribute
+
+
+class SurfaceInputComponent:
+    """Generic surface component for handling user input."""
+
+    @staticmethod
+    def get_mouse_position(surface: Surface) -> Point:
+        return Point(*pg.mouse.get_pos()).relative_to(surface.box)
 
 
 class Surface(ABC):
-    @abstractmethod
-    def get_name(self) -> str:
+    @property
+    def name(self):
+        assert hasattr(self, "__name__")
+        return self.__name__
+
+    @abstract_attribute
+    def box(self) -> Box:
         raise NotImplementedError
 
     @abstractmethod
     def render(self) -> pg.Surface:
         raise NotImplementedError
 
-    def update(self, mouse_position: Point | None) -> None:  # noqa: B027
-        """Update game for 1 frame. Mouse position is relative to surface.
-
-        Mouse position is None if the mouse isn't over the surface.
-        """
+    def update(self) -> None:  # noqa: B027
+        """Update game for 1 frame."""
         pass
 
     @abstractmethod

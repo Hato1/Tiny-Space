@@ -30,7 +30,7 @@ class Scoreboard(Surface):
         self.surface.blit(img, (20, 20))
         return self.surface
 
-    def process_inputs(self, mouse_position: Point):
+    def process_inputs(self):
         pass
 
 
@@ -107,12 +107,13 @@ class SchematicBook(Surface):
 
 
 class Sidebar(Surface):
-    def __init__(self, width, height):
-        self.surface = pg.Surface((width, height))
+    def __init__(self, box):
+        self.box = box
+        self.surface = pg.Surface(self.box.dims)
         self.surfaces = [
-            Scoreboard(width),
-            ResourceQueueUI(width),
-            SchematicBook(width),
+            Scoreboard(self.box.width),
+            ResourceQueueUI(self.box.width),
+            SchematicBook(self.box.width),
         ]
 
     def render(self) -> pg.Surface:

@@ -15,7 +15,7 @@ from grid import Grid
 from helpers import ORTHOGONAL, Box, Event, GridPoint, Notify, Point
 from resources import Queue, Resource
 from score import score
-from templates import Surface
+from templates import Surface, SurfaceInputComponent
 from thing import Thing
 
 common_colours = {
@@ -41,9 +41,6 @@ class RenderGrid(Surface):
     def process_inputs(self, mouse_position: Point):
         # This is handled by World
         pass
-
-    def get_name(self):
-        return "Grid"
 
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Return Grid coordinate of point in pixels."""
@@ -136,28 +133,30 @@ def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     return True
 
 
+class WorldInputComponent(SurfaceInputComponent):
+    pass
+
+
 class World(Surface):
     default_grid_size = GridPoint(5, 7)
 
     def __init__(self, width: int, height: int, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
         assert grid_size.x * cell_size < width, "Grid too wide for display area!"
         assert grid_size.y * cell_size < height, "Grid too tall for display area!"
-        self.name = "World"
         self.grid = Grid(grid_size)
         self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
         self.render_grid = RenderGrid(self.grid, cell_size)
         self.world_surface = pygame.Surface((width, height))
+        self.box = Box(0, 0, width, height)
+        self.input = WorldInputComponent()
 
-    def update(self, mouse_position: Point | None):
-        if mouse_position:
+    def update(self):
+        if mouse_position := self.input.get_mouse_position(self):
             moused_tile = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
             if self.grid.is_in_grid(moused_tile):
                 self.render_grid.moused_tile = moused_tile
                 return
         self.render_grid.moused_tile = None
-
-    def get_name(self) -> str:
-        return self.name
 
     def get_render_grid_rect(self):
         return self.render_grid.surface.get_rect(center=self.world_surface.get_rect().center)
@@ -217,9 +216,8 @@ class World(Surface):
     def calculate_score(self):
         world_score = 0
         for _pos, tile in self.grid:
-            if tile.contains:
-                if tile.contains.score:
-                    world_score += tile.contains.score
+            if not tile.empty and tile.contains.score:
+                world_score += tile.contains.score
         score.score = world_score
 
     def add_building(self, location: GridPoint):
@@ -238,7 +236,7 @@ class World(Surface):
         cursor.set_building_location(None)
         return
 
-    def remove_things_in_schematic(self, schematic: Grid):
+    def remove_things_in_schematic(self):
         schematic = cursor.get_shape()
         offset = cursor.get_building_location()
         for row in range(schematic.size.y):
@@ -256,11 +254,12 @@ class World(Surface):
             schematic.size.x,
             schematic.size.y,
         )
-        if valid_range.contains(location):
-            if self.grid[location].contains:
-                self.remove_things_in_schematic(schematic)
-                self.grid[location].contains = cursor.get_building()
-                self.calculate_score()
+        # FIXME: Replace empty check with check that build location is in cursor schematic.
+        #  Otherwise you can build atop of any tile.
+        if location in valid_range and not self.grid[location].empty:
+            self.remove_things_in_schematic()
+            self.grid[location].contains = cursor.get_building()
+            self.calculate_score()
 
         cursor.set_state(CursorStates.RESOURCE_PLACE)
         cursor.set_building(None)
