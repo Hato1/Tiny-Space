@@ -35,11 +35,10 @@ class Game:
 
     def reset(self):
         """Reset the game and start it again."""
-
         # The Sidebar occupies the right 30% of the display.
         horizontal_split = int(self.box.width * 0.7)
         sidebar_width = self.box.width - horizontal_split
-        self.world = World(horizontal_split, self.box.height)
+        self.world = World(Box(0, 0, horizontal_split, self.box.height))
         self.sidebar = Sidebar(Box(horizontal_split, 0, sidebar_width, self.box.height))
         self.surfaces = [
             self.world,

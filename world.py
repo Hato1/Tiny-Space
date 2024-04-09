@@ -29,18 +29,12 @@ common_colours = {
 }
 
 
-class RenderGrid(Surface):
-    def __init__(self, grid: Grid, cell_size: int):
+class WorldGraphicsComponent(Surface):
+    def __init__(self, surface_size: Point, cell_size: int):
         self.cell_size = cell_size
-        self.grid = grid
-        surface_size = Point(self.grid.width * self.cell_size, self.grid.height * self.cell_size)
         self.surface = pygame.Surface(surface_size)
         # The grid coordinate is the mouse is currently over.
         self.moused_tile: GridPoint | None = None
-
-    def process_inputs(self, mouse_position: Point):
-        # This is handled by World
-        pass
 
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Return Grid coordinate of point in pixels."""
@@ -57,9 +51,9 @@ class RenderGrid(Surface):
         size = size or Point(self.cell_size, self.cell_size)
         pygame.draw.rect(self.surface, color, (*start, *size), width=width)
 
-    def draw_grid_surface(self, ignore_empty=False):
+    def draw_grid_surface(self, grid: Grid, ignore_empty=False):
         """Draw grid lines."""
-        for pos, tile in self.grid:
+        for pos, tile in grid:
             if ignore_empty and tile.empty:
                 continue
             self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLACK"], width=0)
@@ -72,7 +66,7 @@ class RenderGrid(Surface):
             location = cursor_location + pos
             self.draw_box(self.grid_to_pixels(location), color=color, width=3)
 
-    def draw_cursor(self):
+    def draw_cursor(self, grid):
         color = common_colours["CYAN"]
         cursor_location: GridPoint = self.moused_tile
         match cursor.get_state():
@@ -81,8 +75,8 @@ class RenderGrid(Surface):
                 self.draw_schematic(cursor_location, color)
 
             case CursorStates.BUILD_OUTLINE:
-                if self.grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
-                    subgrid, _offset = self.grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
+                if grid.is_in_grid(self.moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
+                    subgrid, _offset = grid.get_subgrid(*self.moused_tile, *cursor.get_shape().size)
                     if validate_schematic(cursor.get_shape(), subgrid):
                         color = common_colours["GREEN"]
                 else:
@@ -109,17 +103,17 @@ class RenderGrid(Surface):
             ),
         )
 
-    def draw_tiles(self):
-        for point, tile in self.grid:
+    def draw_tiles(self, grid: Grid):
+        for point, tile in grid:
             if thing := tile.contains:
                 self.draw_tile(thing, point)
 
-    def render(self, ignore_empty=False, background_color=common_colours["BLUE"]) -> pygame.Surface:
+    def render(self, grid: Grid, ignore_empty: bool = False, background_color=common_colours["BLUE"]) -> pygame.Surface:
         self.surface.fill(background_color)
-        self.draw_grid_surface(ignore_empty)
+        self.draw_grid_surface(grid, ignore_empty)
         if self.moused_tile:
-            self.draw_cursor()
-        self.draw_tiles()
+            self.draw_cursor(grid)
+        self.draw_tiles(grid)
         return self.surface
 
 
@@ -140,29 +134,29 @@ class WorldInputComponent(SurfaceInputComponent):
 class World(Surface):
     default_grid_size = GridPoint(5, 7)
 
-    def __init__(self, width: int, height: int, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
-        assert grid_size.x * cell_size < width, "Grid too wide for display area!"
-        assert grid_size.y * cell_size < height, "Grid too tall for display area!"
+    def __init__(self, box: Box, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
+        assert grid_size.x * cell_size < box.width, "Grid too wide for display area!"
+        assert grid_size.y * cell_size < box.height, "Grid too tall for display area!"
         self.grid = Grid(grid_size)
         self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
-        self.render_grid = RenderGrid(self.grid, cell_size)
-        self.world_surface = pygame.Surface((width, height))
-        self.box = Box(0, 0, width, height)
+        self.graphics = WorldGraphicsComponent(self.grid.size * cell_size, cell_size)
         self.input = WorldInputComponent()
+        self.world_surface = pygame.Surface(box.dims)
+        self.box = box
 
     def update(self):
         if mouse_position := self.input.get_mouse_position(self):
-            moused_tile = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
+            moused_tile = self.graphics.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
             if self.grid.is_in_grid(moused_tile):
-                self.render_grid.moused_tile = moused_tile
+                self.graphics.moused_tile = moused_tile
                 return
-        self.render_grid.moused_tile = None
+        self.graphics.moused_tile = None
 
     def get_render_grid_rect(self):
-        return self.render_grid.surface.get_rect(center=self.world_surface.get_rect().center)
+        return self.graphics.surface.get_rect(center=self.world_surface.get_rect().center)
 
     def process_inputs(self, mouse_position: Point):
-        grid_coord = self.render_grid.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
+        grid_coord = self.graphics.pixels_to_grid(mouse_position - Point(*self.get_render_grid_rect()[:2]))
         cursor_state = cursor.get_state()
         # Fails if clicked elsewhere on the canvas.
         if self.grid.is_in_grid(grid_coord):
@@ -183,7 +177,7 @@ class World(Surface):
         """Blit the grid to the center of the canvas."""
         self.world_surface.fill(common_colours["BLACK"])
 
-        grid = self.render_grid.render()
+        grid = self.graphics.render(self.grid)
 
         x, y, width, height = self.get_render_grid_rect()
         pygame.draw.rect(self.world_surface, common_colours["BLUE"], (x - 1, y - 1, width + 2, height + 2))

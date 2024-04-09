@@ -12,16 +12,13 @@ from buildings import Building
 from helpers import Event, Observer, Point
 from score import score
 from templates import Surface
-from world import RenderGrid
+from world import WorldGraphicsComponent
 
 
 class Scoreboard(Surface):
     def __init__(self, width):
         self.height = 50
         self.surface = pg.Surface((width, self.height))
-
-    def get_name(self) -> str:
-        return "Scoreboard"
 
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 0))
@@ -30,7 +27,7 @@ class Scoreboard(Surface):
         self.surface.blit(img, (20, 20))
         return self.surface
 
-    def process_inputs(self):
+    def process_inputs(self, *args, **kwargs):
         pass
 
 
@@ -46,9 +43,6 @@ class ResourceQueueUI(Surface, Observer):
     def event_listener(self, event: Event):
         if event == Event.PlaceResource:
             self.last_resource_placed_time = pg.time.get_ticks()
-
-    def get_name(self) -> str:
-        return "Resource Queue"
 
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 255))
@@ -79,9 +73,6 @@ class SchematicBook(Surface):
         self.surface = pg.Surface((width, self.height))
         self.visible_buildings = Building.BUILDING_REGISTRY
 
-    def get_name(self) -> str:
-        return "SchematicBook"
-
     def render(self) -> pg.Surface:
         self.surface.fill((50, 50, 50))
         height = 15
@@ -92,8 +83,8 @@ class SchematicBook(Surface):
             self.surface.blit(img, (rect[0], height))
             height += img.get_height() + 5
 
-            render_grid = RenderGrid(building.get_schematic(), 25)
-            surf = render_grid.render(ignore_empty=True, background_color=(50, 50, 50))
+            render_grid = WorldGraphicsComponent(building.get_schematic().size * 25, 25)
+            surf = render_grid.render(building.get_schematic(), ignore_empty=True, background_color=(50, 50, 50))
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))
             self.surface.blit(
@@ -127,6 +118,3 @@ class Sidebar(Surface):
 
     def process_inputs(self, mouse_position: Point):
         pass
-
-    def get_name(self) -> str:
-        return "Sidebar"
