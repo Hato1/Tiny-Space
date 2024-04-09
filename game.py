@@ -30,6 +30,7 @@ class Game:
 
         pg.init()
         self._screen = pg.display.set_mode(self.size, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
+        self.clock = pg.time.Clock()
         self.main_loop()
 
     def reset(self):
@@ -117,6 +118,8 @@ class Game:
             elif self.state is State.QUITTING:
                 logging.info("Quitting.")
                 return
+            # Limit FPS to 60
+            self.clock.tick(60)
 
 
 if __name__ == "__main__":
