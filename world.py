@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging
+from enum import Enum
 from typing import Type
 
 import pygame
@@ -18,15 +19,15 @@ from score import score
 from templates import Surface, SurfaceInputComponent
 from thing import Thing
 
-common_colours = {
-    "BLACK": (0, 0, 0),
-    "WHITE": (200, 200, 200),
-    "BLUE": (30, 30, 200),
-    "CYAN": (0, 200, 200),
-    "GREEN": (0, 200, 0),
-    "RED": (200, 0, 0),
-    "GREY": (100, 100, 100),
-}
+
+class Colour(tuple, Enum):
+    BLACK = (0, 0, 0)
+    WHITE = (200, 200, 200)
+    BLUE = (30, 30, 200)
+    CYAN = (0, 200, 200)
+    GREEN = (0, 200, 0)
+    RED = (200, 0, 0)
+    GREY = (100, 100, 100)
 
 
 class WorldGraphicsComponent(Surface):
@@ -59,10 +60,10 @@ class WorldGraphicsComponent(Surface):
         """Convert grid coordinate to pixel coordinate"""
         return Point(grid_point.x * self.cell_size, grid_point.y * self.cell_size)
 
-    def draw_line(self, start: Point, end: Point, color=common_colours["BLUE"], line_width=2):
+    def draw_line(self, start: Point, end: Point, color=Colour.BLUE, line_width=2):
         pygame.draw.line(self.surface, color, start, end, line_width)
 
-    def draw_box(self, start: Point, size: Point | None = None, color=common_colours["BLUE"], width=1):
+    def draw_box(self, start: Point, size: Point | None = None, color=Colour.BLUE, width=1):
         # If width is 0 then the box will be filled.
         size = size or Point(self.cell_size, self.cell_size)
         pygame.draw.rect(self.surface, color, (*start, *size), width=width)
@@ -72,8 +73,8 @@ class WorldGraphicsComponent(Surface):
         for pos, tile in grid:
             if tile.invisible:
                 continue
-            self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLACK"], width=0)
-            self.draw_box(self.grid_to_pixels(pos), color=common_colours["BLUE"])
+            self.draw_box(self.grid_to_pixels(pos), color=Colour.BLACK, width=0)
+            self.draw_box(self.grid_to_pixels(pos), color=Colour.BLUE)
 
     def get_moused_tile(self) -> GridPoint | None:
         mouse_coord = Point(*pygame.mouse.get_pos())
@@ -81,7 +82,7 @@ class WorldGraphicsComponent(Surface):
             return self.pixels_to_grid(relative)
         return None
 
-    def _draw_cursor(self, grid: Grid, cursor_location: GridPoint, shape, color=common_colours["CYAN"], width=3):
+    def _draw_cursor(self, grid: Grid, cursor_location: GridPoint, shape, color=Colour.CYAN, width=3):
         """Draw the shape under Cursor at cursor_location.
 
         TODO: Merge this with draw_grid_surface and hold cursor state in Cursor?
@@ -121,20 +122,20 @@ class WorldGraphicsComponent(Surface):
         if shadow := cursor.get_shadow_shape():
             shadow_location = cursor.get_building_location()
             # TODO: Add arrows pointing at the cursor tiles (They're valid build placements)
-            self._draw_cursor(grid, shadow_location, shadow, common_colours["GREEN"])
+            self._draw_cursor(grid, shadow_location, shadow, Colour.GREEN)
 
         moused_tile = self.get_moused_tile()
         if moused_tile:
-            cursor_color = common_colours["CYAN"]
+            cursor_color = Colour.CYAN
             if cursor.get_state() == CursorStates.BUILD_OUTLINE:
                 if grid.is_in_grid(moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
                     subgrid, _offset = grid.get_subgrid(*moused_tile, *cursor.get_shape().size)
                     if validate_schematic(cursor.get_shape(), subgrid):
-                        cursor_color = common_colours["GREEN"]
+                        cursor_color = Colour.GREEN
                 else:
-                    cursor_color = common_colours["RED"]
+                    cursor_color = Colour.RED
             elif cursor.get_state() == CursorStates.BUILD_LOCATION:
-                cursor_color = common_colours["GREY"]
+                cursor_color = Colour.GREY
                 # width=5
             self._draw_cursor(grid, moused_tile, cursor.get_shape(), cursor_color)
 
@@ -154,7 +155,7 @@ class WorldGraphicsComponent(Surface):
             if thing := tile.contains:
                 self.draw_tile(thing, point)
 
-    def render(self, grid: Grid, ignore_empty: bool = False, background_color=common_colours["BLUE"]) -> pygame.Surface:
+    def render(self, grid: Grid, ignore_empty: bool = False, background_color=Colour.BLUE) -> pygame.Surface:
         self.surface.fill(background_color)
         self.draw_grid_surface(grid)
         self.draw_cursor(grid)
