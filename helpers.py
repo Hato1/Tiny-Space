@@ -30,7 +30,9 @@ class Point(NamedTuple):
 
     def relative_to(self, box: Box) -> Self | None:
         relative = self.__class__(self.x - box.x, self.y - box.y)
-        if relative.x > box.max_x or relative.y > box.max_y:
+        if relative.x >= box.max_x or relative.y >= box.max_y:
+            return None
+        if relative.x < 0 or relative.y < 0:
             return None
         return relative
 
@@ -80,11 +82,15 @@ class Box(NamedTuple):
 
     @property
     def top_left(self):
-        return self.x, self.y
+        return Point(self.x, self.y)
 
     @property
     def dims(self):
-        return self.width, self.height
+        return Point(self.width, self.height)
+
+    @property
+    def center(self):
+        return (self.x + self.width // 2, self.y + self.height // 2)
 
     def __contains__(self, other: Point | Box | Any) -> bool:
         """Returns true if the point/box is enclosed inside of self."""

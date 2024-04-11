@@ -14,6 +14,7 @@ class Tile:
         self.name = "UNUSED"
         self.score = 0
         self.contains = contains
+        self.invisible = False
 
     @property
     def empty(self) -> bool:
@@ -28,3 +29,9 @@ class Tile:
             return self.contains.image()
         else:
             raise NotImplementedError
+
+
+class Null(Tile):
+    def __init__(self):
+        super().__init__()
+        self.invisible = True

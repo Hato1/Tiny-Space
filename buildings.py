@@ -5,7 +5,7 @@ from typing import Type
 from grid import Grid
 from resources import Aerofoam, Crystal, Iron, Oil
 from thing import Thing
-from tiles import Tile
+from tiles import Null, Tile
 
 
 class Building(Thing):
@@ -40,8 +40,8 @@ class Base(Building):
 
 class WardenOutpost(Building):
     name = "Warden Outpost"
-    # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(), Tile(Aerofoam), Tile()]]
-    schematic_list = [[Tile(Oil), Tile(Crystal), Tile(Crystal)], [Tile(), Tile(Aerofoam), Tile()]]
+    # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Null(), Tile(Aerofoam), Null()]]
+    schematic_list = [[Tile(Oil), Tile(Crystal), Tile(Crystal)], [Null(), Tile(Aerofoam), Null()]]
     _schematic = grid_from_transposed(schematic_list)
     score = 5
 
@@ -54,5 +54,5 @@ class CommsTower(Building):
 
 class ArsenicScrubber(Building):
     name = "Arsenic Scrubber"
-    schematic_list = [[Tile(), Tile(Crystal)], [Tile(), Tile(Oil)], [Tile(Aerofoam), Tile(Iron)]]
+    schematic_list = [[Null(), Tile(Crystal)], [Null(), Tile(Oil)], [Tile(Aerofoam), Tile(Iron)]]
     _schematic = grid_from_transposed(schematic_list)

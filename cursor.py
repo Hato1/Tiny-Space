@@ -23,17 +23,22 @@ class Cursor:
         self._state: CursorStates = CursorStates.RESOURCE_PLACE
         self.rotation: int = 0
         self.selected_structure: Type[Building] | None = None
-        self.building_location: GridPoint = None
+        self.shadow_location: GridPoint = None
+        # The grid coordinate is the mouse is currently over.
+        self.moused_tile: GridPoint | None = None
 
-    def set_state(self, state: CursorStates):
+    def set_state(self, state: CursorStates, **kwargs):
+        if state is CursorStates.RESOURCE_PLACE:
+            self.shadow_location = None
+            self.selected_structure = None
+        if state is CursorStates.BUILD_OUTLINE:
+            self.selected_structure = kwargs["building"]
+            self.shadow_location = None
+            self.rotation = 0
+        if state is CursorStates.BUILD_LOCATION:
+            assert self.selected_structure, "Tried to skip cursor state BUILD_OUTLINE."
+            self.shadow_location = kwargs["location"]
         self._state = state
-
-    def set_building(self, building: Type[Building]):
-        self.selected_structure = building
-        self.rotation = 0
-
-    def set_building_location(self, building_location: GridPoint):
-        self.building_location = building_location
 
     def rotate(self):
         self.rotation = (self.rotation + 1) % 4
@@ -42,13 +47,18 @@ class Cursor:
         return self._state
 
     def get_building_location(self):
-        return self.building_location
+        return self.shadow_location
 
     def get_shape(self) -> Grid:
-        if self._state == CursorStates.RESOURCE_PLACE:
+        if self._state in [CursorStates.RESOURCE_PLACE, CursorStates.BUILD_LOCATION]:
             return Grid(initial=[[Tile(Iron)]])
         else:
             return self.selected_structure.get_schematic(self.rotation)
+
+    def get_shadow_shape(self) -> Grid:
+        if self._state is not CursorStates.BUILD_LOCATION:
+            return None
+        return self.selected_structure.get_schematic(self.rotation)
 
     def get_building(self):
         return self.selected_structure

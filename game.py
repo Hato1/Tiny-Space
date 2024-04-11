@@ -38,7 +38,8 @@ class Game:
         # The Sidebar occupies the right 30% of the display.
         horizontal_split = int(self.box.width * 0.7)
         sidebar_width = self.box.width - horizontal_split
-        self.world = World(Box(0, 0, horizontal_split, self.box.height))
+        self.world = World()
+        self.world.graphics.center_box(Box(0, 0, horizontal_split, self.box.height))
         self.sidebar = Sidebar(Box(horizontal_split, 0, sidebar_width, self.box.height))
         self.surfaces = [
             self.world,
@@ -89,9 +90,13 @@ class Game:
 
     def render(self):
         """Draw all the surfaces to the display."""
-        self._screen.fill((0, 255, 0))
+        self._screen.fill((0, 0, 0))
         for surface in self.surfaces:
-            assert surface.box in self.box
+            assert surface.box in self.box, f"{surface.box} does not fit in {self.box}!"
+            if surface == self.world:
+                # Draw a nice border. Bordered surfaces should ideally be less hacky...
+                x, y, width, height = surface.box
+                pg.draw.rect(self._screen, (30, 30, 200), (x - 1, y - 1, width + 2, height + 2))
             self._screen.blit(surface.render(), surface.box.top_left)
         pg.display.update()
 
