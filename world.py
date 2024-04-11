@@ -36,6 +36,14 @@ class WorldGraphicsComponent(Surface):
         self.cell_size = cell_size
         self.surface = pygame.Surface(grid_size * cell_size)
         self.box = Box(*self.surface.get_rect())
+        self.hammer_assets = [
+            pygame.image.load("assets/hammer/hammer1.png"),
+            pygame.image.load("assets/hammer/hammer2.png"),
+            pygame.image.load("assets/hammer/hammer3.png"),
+            pygame.image.load("assets/hammer/hammer4.png"),
+            pygame.image.load("assets/hammer/hammer5.png"),
+        ]
+        self.frame_count = 0
 
     def center_box(self, box):
         """Set self.box position to be in the center of box."""
@@ -90,6 +98,24 @@ class WorldGraphicsComponent(Surface):
                 continue
             self.draw_box(self.grid_to_pixels(location), color=color, width=width)
 
+    def draw_build_hammers(self):
+        if shadow := cursor.get_shadow_shape():
+            shadow_location = cursor.get_building_location()
+            if not shadow_location:
+                return
+            for pos, tile in shadow:
+                if tile.empty:
+                    continue
+                location = shadow_location + pos
+                size = Point(*self.hammer_assets[0].get_size())
+                self.surface.blit(
+                    self.hammer_assets[(self.frame_count // 6) % 5],
+                    (
+                        (location.x + 0.5) * self.cell_size - size.x // 2,
+                        (location.y + 0.5) * self.cell_size - size.y // 2,
+                    ),
+                )
+
     def draw_cursor(self, grid: Grid):
         # TODO: Make this method less ugly.
         if shadow := cursor.get_shadow_shape():
@@ -133,6 +159,8 @@ class WorldGraphicsComponent(Surface):
         self.draw_grid_surface(grid)
         self.draw_cursor(grid)
         self.draw_tiles(grid)
+        self.draw_build_hammers()
+        self.frame_count += 1
         return self.surface
 
 

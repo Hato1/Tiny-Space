@@ -87,6 +87,8 @@ class SchematicBook(Surface):
             height += img.get_height() + 5
 
             schematic_renderer = WorldGraphicsComponent(building.get_schematic().size, 25)
+            schematic_renderer.draw_cursor = lambda grid: None  # type: ignore[method-assign]
+            schematic_renderer.draw_build_hammers = lambda: True  # type: ignore[method-assign]
             schematic_renderer.box = Box(
                 self.box.x + schematic_renderer.surface.get_rect(center=self.surface.get_rect().center)[0],
                 self.box.y + height,
