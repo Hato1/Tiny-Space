@@ -2,8 +2,10 @@
 
 """
 
+
 from __future__ import annotations
 
+import itertools
 import logging
 from enum import Enum
 from typing import Type
@@ -124,8 +126,7 @@ class WorldGraphicsComponent(Surface):
             # TODO: Add arrows pointing at the cursor tiles (They're valid build placements)
             self._draw_cursor(grid, shadow_location, shadow, Colour.GREEN)
 
-        moused_tile = self.get_moused_tile()
-        if moused_tile:
+        if moused_tile := self.get_moused_tile():
             cursor_color = Colour.CYAN
             if cursor.get_state() == CursorStates.BUILD_OUTLINE:
                 if grid.is_in_grid(moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
@@ -166,13 +167,13 @@ class WorldGraphicsComponent(Surface):
 
 
 def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
-    # Add check for in grid
-    for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True):
-        if schematic_tile.empty or schematic_tile.contains == grid_tile.contains:
-            pass
-        else:
-            return False
-    return True
+    return not any(
+        not schematic_tile.empty
+        and schematic_tile.contains != grid_tile.contains
+        for (_, schematic_tile), (_, grid_tile) in zip(
+            schematic, subgrid, strict=True
+        )
+    )
 
 
 class WorldInputComponent(SurfaceInputComponent):
@@ -215,10 +216,10 @@ class World(Surface):
     def has_adjacent_tile(self, grid_coord: GridPoint) -> bool:
         """Returns True if an adjacent tile isn't empty."""
         orthogonal_tiles: list[GridPoint] = [grid_coord + direction for direction in ORTHOGONAL]
-        for point in orthogonal_tiles:
-            if self.grid.is_in_grid(point) and not self.grid[point].empty:
-                return True
-        return False
+        return any(
+            self.grid.is_in_grid(point) and not self.grid[point].empty
+            for point in orthogonal_tiles
+        )
 
     def fill_tile(self, point: GridPoint, thing: Type[Resource] | Type[Building]) -> bool:
         """Fill the tile, if possible.
@@ -235,11 +236,11 @@ class World(Surface):
         return True
 
     def calculate_score(self):
-        world_score = 0
-        for _pos, tile in self.grid:
-            if not tile.empty and tile.contains.score:
-                world_score += tile.contains.score
-        score.score = world_score
+        score.score = sum(
+            tile.contains.score
+            for _pos, tile in self.grid
+            if not tile.empty and tile.contains.score
+        )
 
     def lock_build_outline(self, location: GridPoint):
         """Checks whether a building can be build with selected resources"""
@@ -257,10 +258,9 @@ class World(Surface):
     def remove_things_in_schematic(self):
         schematic = cursor.get_shadow_shape()
         offset = cursor.get_building_location()
-        for row in range(schematic.size.y):
-            for column in range(schematic.size.x):
-                if schematic[column, row].contains:
-                    self.grid[column + offset.x, row + offset.y].contains = None
+        for row, column in itertools.product(range(schematic.size.y), range(schematic.size.x)):
+            if schematic[column, row].contains:
+                self.grid[column + offset.x, row + offset.y].contains = None
 
     def confirm_building(self, location: GridPoint):
         schematic = cursor.get_shadow_shape()

@@ -36,10 +36,10 @@ class Grid:
     def __eq__(self, other):
         if not isinstance(other, Grid):
             return False
-        for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True):
-            if pos1 != pos2 or tile1.contains != tile2.contains:
-                return False
-        return True
+        return not any(
+            pos1 != pos2 or tile1.contains != tile2.contains
+            for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True)
+        )
 
     def __repr__(self):
         string = "[["
@@ -47,9 +47,9 @@ class Grid:
         for pos, item in self:
             if pos.y != row_count:
                 row_count = pos.y
-                string = string[:-2] + "], ["
+                string = f"{string[:-2]}], ["
             string += f"{item.contains}, "
-        return string[:-2] + "]]"
+        return f"{string[:-2]}]]"
 
     @property
     def size(self):
@@ -65,9 +65,7 @@ class Grid:
 
     def get_subgrid(self, x, y, width, height) -> tuple[Grid, GridPoint]:
         """Return a Grid consisting of a subgrid of self"""
-        sub_list = []
-        for column in self._grid[x : x + width]:
-            sub_list.append(column[y : y + height])
+        sub_list = [column[y:y+height] for column in self._grid[x:x+width]]
         subgrid = Grid(initial=sub_list[:])
         assert subgrid.size == Point(width, height), f"{subgrid.size} is not equal to {Point(width, height)}!"
         return subgrid, GridPoint(x, y)

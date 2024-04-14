@@ -40,6 +40,7 @@ class ResourceQueue:
         random.seed("debug")
         self.queue: list[Type[Resource]] = []
         self.extend_queue()
+        self.last_resource_taken: Resource
 
     def extend_queue(self):
         """Repopulates the queue with an even balance of resources."""
