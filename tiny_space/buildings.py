@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Type
 
-from grid import Grid
-from resources import Aerofoam, Crystal, Iron, Oil
-from thing import Thing
-from tiles import Null, Tile
+from .grid import Grid
+from .resources import Aerofoam, Crystal, Iron, Oil
+from .thing import Thing
+from .tiles import Null, Tile
 
 
 class Building(Thing):

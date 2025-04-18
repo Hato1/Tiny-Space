@@ -7,12 +7,12 @@ from typing import Type
 
 import pygame as pg
 
-import resources
-from buildings import Building
-from helpers import Box, Event, Observer, Point
-from score import score
-from templates import Surface
-from world import WorldGraphicsComponent
+from . import resources
+from .buildings import Building
+from .helpers import Box, Event, Observer, Point
+from .score import score
+from .templates import Surface
+from .world import WorldGraphicsComponent
 
 
 class Scoreboard(Surface):

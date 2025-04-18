@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import pygame as pg
 
-from helpers import Box, Point, abstract_attribute
+from .helpers import Box, Point, abstract_attribute
 
 
 class SurfaceInputComponent:

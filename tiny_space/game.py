@@ -5,11 +5,11 @@ from enum import Enum
 
 import pygame as pg
 
-import debug
-from helpers import Box, Point
-from sidebar import Sidebar
-from templates import Surface
-from world import World
+from . import debug
+from .helpers import Box, Point
+from .sidebar import Sidebar
+from .templates import Surface
+from .world import World
 
 
 class State(Enum):

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Iterator, overload
 
-from helpers import GridPoint, Point
-from tiles import Tile
+from .helpers import GridPoint, Point
+from .tiles import Tile
 
 
 class Grid:

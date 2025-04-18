@@ -6,7 +6,7 @@ from typing import Type
 
 import pygame as pg
 
-from thing import Thing
+from .thing import Thing
 
 
 class Tile:

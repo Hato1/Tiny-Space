@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from typing import Type
 
-from thing import Thing
+from .thing import Thing
 
 
 class Resource(Thing):

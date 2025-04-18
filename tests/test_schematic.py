@@ -1,9 +1,9 @@
 import pytest
 
-from buildings import Building
-from grid import Grid
-from resources import Iron
-from tiles import Tile
+from tiny_space.buildings import Building
+from tiny_space.grid import Grid
+from tiny_space.resources import Iron
+from tiny_space.tiles import Tile
 
 # Assuming Grid has a method to compare equality that is meaningful for tests
 # If not, you might need to implement a utility function for comparing Grid objects
