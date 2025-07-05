@@ -10,21 +10,33 @@ from .helpers import GridPoint, Point
 class Grid:
     """Low level generic object representing a 2d grid that can be treated similarly to a list of lists.
 
-    As a rule of thumb, it shouldn't contain any logic specific to the game.
+    Created to resolve confusion between X, Y, Width, Height, Rows, Columns. Additionally has methods for
+    iteration and rotation.
 
-    You can index into the grid like so:
-    g = Grid()
-    g[3,4]
+    Try avoid any logic specific to the game for compatibility with other projects.
+
+    You can index similarly to a real list[list[object]]
+    g = Grid([
+        [Iron, Oil],
+        [Wood, Food].
+    ])
+    g[1,1]
+    > Food
+    g[0, 1] = Alice
+    g[0]
+    > [Iron, Alice]
 
     You can iterate through all tiles in the grid like this:
-    g = Grid()
+    g = Grid(...)
     for point, tile in g:
         assert g[point] == tile
 
     Methods:
-        is_in_grid(self, point: GridPoint) -> bool
-        height(self) -> int
-        width(self) -> int
+        from_dimensions(size) -> Grid
+        is_in_grid(point: GridPoint) -> bool
+        height() -> int
+        width() -> int
+        rotate(n) -> Rotated copy of Grid
     """
 
     def __init__(self, initial: list[list[Tile]]):
@@ -63,6 +75,7 @@ class Grid:
 
     def get_subgrid(self, x, y, width, height) -> tuple[Grid, GridPoint]:
         """Return a Grid consisting of a subgrid of self"""
+        # TODO: Clean this up.
         sub_list = [column[y:y+height] for column in self._grid[x:x+width]]
         subgrid = Grid(sub_list[:])
         assert subgrid.size == Point(width, height), f"{subgrid.size} is not equal to {Point(width, height)}!"
@@ -102,7 +115,7 @@ class Grid:
                 yield GridPoint(x, y), self[x, y]
 
     def rotate(self, times: int) -> Grid:
-        """Rotate by 90 degrees n times."""
+        """Get a copy of this grid rotated by 90 degrees n times."""
         grid: list[list[Tile]] = self._grid
         for _ in range(times):
             grid = list(zip(*grid[::-1], strict=True))  # type: ignore[arg-type]
