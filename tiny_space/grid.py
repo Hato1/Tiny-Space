@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Iterator, overload
 
+from tiny_space.thing import Nothing, Tile
+
 from .helpers import GridPoint, Point
-from .tiles import Tile
 
 
 class Grid:
@@ -37,7 +38,7 @@ class Grid:
         if not isinstance(other, Grid):
             return False
         return not any(
-            pos1 != pos2 or tile1.contains != tile2.contains
+            pos1 != pos2 or tile1 != tile2
             for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True)
         )
 
@@ -48,7 +49,7 @@ class Grid:
             if pos.y != row_count:
                 row_count = pos.y
                 string = f"{string[:-2]}], ["
-            string += f"{item.contains}, "
+            string += f"{item}, "
         return f"{string[:-2]}]]"
 
     @property
@@ -57,7 +58,7 @@ class Grid:
 
     def _initialise_grid(self, size: GridPoint):
         """Set tiles to a 2d grid according to grid_size and place the Base structure in the center tile."""
-        self._grid = [[Tile() for _ in range(size.y)] for _ in range(size.x)]
+        self._grid = [[Nothing for _ in range(size.y)] for _ in range(size.x)]
 
     def is_in_grid(self, point: GridPoint) -> bool:
         """Return whether point lies in the grid"""
@@ -94,6 +95,9 @@ class Grid:
             index = GridPoint(*index)
             return self._grid[index.x][index.y]
         raise ValueError
+
+    def __setitem__(self, index: GridPoint, value: Tile):
+        self._grid[index.x][index.y] = value
 
     def __iter__(self) -> Iterator[tuple[GridPoint, Tile]]:
         for y in range(self.height):

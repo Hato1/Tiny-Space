@@ -3,7 +3,7 @@ import pytest
 from tiny_space.buildings import Building
 from tiny_space.grid import Grid
 from tiny_space.resources import Iron
-from tiny_space.tiles import Tile
+from tiny_space.thing import Nothing
 
 # Assuming Grid has a method to compare equality that is meaningful for tests
 # If not, you might need to implement a utility function for comparing Grid objects
@@ -27,10 +27,10 @@ from tiny_space.tiles import Tile
 )
 def test_get_schematic(rotation, expected_id):
     rotations = [
-        Grid(initial=[[Tile(Iron), Tile(Iron)], [Tile(Iron), Tile()]]),
-        Grid(initial=[[Tile(Iron), Tile(Iron)], [Tile(), Tile(Iron)]]),
-        Grid(initial=[[Tile(), Tile(Iron)], [Tile(Iron), Tile(Iron)]]),
-        Grid(initial=[[Tile(Iron), Tile()], [Tile(Iron), Tile(Iron)]]),
+        Grid(initial=[[Iron, Iron], [Iron, Nothing]]),
+        Grid(initial=[[Iron, Iron], [Nothing, Iron]]),
+        Grid(initial=[[Nothing, Iron], [Iron, Iron]]),
+        Grid(initial=[[Iron, Nothing], [Iron, Iron]]),
     ]
 
     class TestBuilding(Building):

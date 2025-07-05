@@ -74,7 +74,7 @@ class WorldGraphicsComponent(Surface):
     def draw_grid_surface(self, grid: Grid, skip_nothing: bool = False):
         """Draw tile outlines. Use ignore_empty to draw outlines of full tiles."""
         for pos, tile in grid:
-            if skip_nothing and tile.contains is Nothing:
+            if skip_nothing and tile is Nothing:
                 continue
             self.draw_box(self.grid_to_pixels(pos), color=Color.BLACK, width=0)
             self.draw_box(self.grid_to_pixels(pos), color=Color.BLUE)
@@ -93,7 +93,7 @@ class WorldGraphicsComponent(Surface):
         # if not cursor_location:
         #     return
         for pos, tile in shape:
-            if tile.contains is Nothing:
+            if tile is Nothing:
                 continue
             location = cursor_location + pos
             if not grid.is_in_grid(location):
@@ -108,7 +108,7 @@ class WorldGraphicsComponent(Surface):
             if not shadow_location:
                 return
             for pos, tile in shadow:
-                if tile.contains is Nothing:
+                if tile is Nothing:
                     continue
                 location = shadow_location + pos
                 size = Point(*self.hammer_assets[0].get_size())
@@ -156,7 +156,7 @@ class WorldGraphicsComponent(Surface):
 
     def draw_tiles(self, grid: Grid):
         for point, tile in grid:
-            self.draw_tile(tile.contains, point)
+            self.draw_tile(tile, point)
 
     def render(self, grid: Grid, ignore_empty: bool = False, background_color=Color.BLUE) -> pygame.Surface:
         self.surface.fill(background_color)
@@ -170,8 +170,8 @@ class WorldGraphicsComponent(Surface):
 
 def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     return not any(
-        schematic_tile.contains is not Nothing
-        and schematic_tile.contains != grid_tile.contains
+        schematic_tile is not Nothing
+        and schematic_tile != grid_tile
         for (_, schematic_tile), (_, grid_tile) in zip(
             schematic, subgrid, strict=True
         )
@@ -187,7 +187,8 @@ class World(Surface):
 
     def __init__(self, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
         self.grid = Grid(grid_size)
-        self.grid[self.grid.size.x // 2, self.grid.size.y // 2].contains = Base
+        center = GridPoint(self.grid.size.x // 2, self.grid.size.y // 2)
+        self.grid[center] = Base
         self.graphics = WorldGraphicsComponent(grid_size, cell_size)
         self.input = WorldInputComponent()
 
@@ -219,7 +220,7 @@ class World(Surface):
         """Returns True if an adjacent tile isn't empty."""
         orthogonal_tiles: list[GridPoint] = [grid_coord + direction for direction in ORTHOGONAL]
         return any(
-            self.grid.is_in_grid(point) and self.grid[point].contains is not Nothing
+            self.grid.is_in_grid(point) and self.grid[point] is not Nothing
             for point in orthogonal_tiles
         )
 
@@ -228,13 +229,13 @@ class World(Surface):
 
         Filling a tile is not possible if it's already filled or if there are no adjacent filled tiles.
         """
-        if self.grid[point].contains is not Nothing:
+        if self.grid[point] is not Nothing:
             logging.warning(f"Illegal move: Can't fill occupied tile at {point}.")
             return False
         if not self.has_adjacent_tile(point):
             logging.warning(f"Illegal move: Can't fill disconnected tile at {point}.")
             return False
-        self.grid[point].contains = thing
+        self.grid[point] = thing
         return True
 
     def calculate_score(self):
@@ -261,9 +262,11 @@ class World(Surface):
         assert schematic
         offset = cursor.get_building_location()
         assert offset
+        # TODO: Iterate through grid directly instead of using itertools.
         for row, column in itertools.product(range(schematic.size.y), range(schematic.size.x)):
-            if schematic[column, row].contains is not Nothing:
-                self.grid[column + offset.x, row + offset.y].contains = Nothing
+            if schematic[column, row] is not Nothing:
+                gridpoint = GridPoint(column + offset.x, row + offset.y)
+                self.grid[gridpoint] = Nothing
 
     def confirm_building(self, location: GridPoint):
         schematic = cursor.get_shadow_shape()
@@ -279,8 +282,8 @@ class World(Surface):
         )
         # FIXME: Replace empty check with check that build location is in cursor schematic.
         #  Otherwise you can build atop of any tile.
-        if location in valid_range and self.grid[location].contains is not Nothing:
+        if location in valid_range and self.grid[location] is not Nothing:
             self.remove_things_in_schematic()
-            self.grid[location].contains = cursor.get_building() or Nothing
+            self.grid[location] = cursor.get_building() or Nothing
             self.calculate_score()
         cursor.set_state(CursorStates.RESOURCE_PLACE)

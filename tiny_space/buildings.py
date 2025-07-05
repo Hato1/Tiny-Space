@@ -11,8 +11,7 @@ from tiny_space.helpers import add_spaces_to_camelcase
 
 from .grid import Grid
 from .resources import Aerofoam, Crystal, Iron, Oil
-from .thing import Thing, Nothing
-from .tiles import Tile
+from .thing import Thing, Nothing, Tile
 
 
 DUMMY_GRID = Grid()
@@ -53,16 +52,16 @@ class Base(Building):
 
 class WardenOutpost(Building):
     # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(Nothing), Tile(Aerofoam), Tile(Nothing)]]
-    schematic_list = [[Tile(Oil), Tile(Crystal), Tile(Crystal)], [Tile(Nothing), Tile(Aerofoam), Tile(Nothing)]]
+    schematic_list: list[list[Tile]] = [[Oil, Crystal, Crystal], [Nothing, Aerofoam, Nothing]]
     _schematic = grid_from_transposed(schematic_list)
     score = 5
 
 
 class CommsTower(Building):
-    schematic_list = [[Tile(Crystal), Tile(Iron), Tile(Crystal), Tile(Oil)]]
+    schematic_list: list[list[Tile]] = [[Crystal, Iron, Crystal, Oil]]
     _schematic = grid_from_transposed(schematic_list)
 
 
 class ArsenicScrubber(Building):
-    schematic_list = [[Tile(Nothing), Tile(Crystal)], [Tile(Nothing), Tile(Oil)], [Tile(Aerofoam), Tile(Iron)]]
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
     _schematic = grid_from_transposed(schematic_list)

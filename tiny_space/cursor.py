@@ -8,8 +8,7 @@ from typing import Type
 from .buildings import Building
 from .grid import Grid
 from .helpers import GridPoint
-from .resources import Iron
-from .tiles import Tile
+from .resources import Resource
 
 
 class CursorStates(Enum):
@@ -51,10 +50,10 @@ class Cursor:
 
     def get_shape(self) -> Grid:
         if self._state in [CursorStates.RESOURCE_PLACE, CursorStates.BUILD_LOCATION]:
-            return Grid(initial=[[Tile(Iron)]])
-        else:
-            assert self.selected_structure
-            return self.selected_structure.get_schematic(self.rotation)
+            return Grid(initial=[[Resource]])
+
+        assert self.selected_structure
+        return self.selected_structure.get_schematic(self.rotation)
 
     def get_shadow_shape(self) -> Grid | None:
         if self._state is not CursorStates.BUILD_LOCATION:

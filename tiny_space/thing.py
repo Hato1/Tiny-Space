@@ -48,3 +48,5 @@ class Nothing:
     @classmethod
     def image(cls):
         return None
+
+Tile = type[Thing] | type[Nothing]
