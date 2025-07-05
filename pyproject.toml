@@ -6,8 +6,8 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.12"
-pygame = "^2.5.2"
+python = "~3.13"
+pygame-ce = "^2.5.3"
 pre-commit = "^3.7.0"
 mypy = "^1.9.0"
 isort = "^5.13.2"
@@ -17,7 +17,6 @@ flake8-bugbear = "^24.2.6"
 flake8-requirements = "^2.1.1"
 pylint = "^3.1.0"
 yesqa = "^1.5.0"
-pydantic = "^2.6.4"
 typing-extensions = "^4.10.0"
 pytest = "^8.1.1"
 
@@ -30,7 +29,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.mypy]
 # Specify default files
 # Use pydantic plugin
-plugins = "pydantic.mypy"
+# plugins = "pydantic.mypy"
 
 # Check the body of every function, regardless of whether it has type annotations
 check_untyped_defs = true
