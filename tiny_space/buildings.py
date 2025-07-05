@@ -14,33 +14,33 @@ from .resources import Aerofoam, Crystal, Iron, Oil
 from .thing import Thing, Nothing, Tile
 
 
-DUMMY_GRID = Grid()
-
 class Building(Thing):
-    # name = "Building Baseclass"
     asset_subdir = "buildings"
 
-    _schematic: Grid = DUMMY_GRID
+    # The 'recipe' to construct this building.
+    _schematic: Grid | None = None
 
     BUILDING_REGISTRY: list[Type[Building]] = []
 
-    score = 1
-
     @classmethod
     def __init_subclass__(cls, **kwargs):
-        # Only register buildings with valid schematics.
-        if cls._schematic is not DUMMY_GRID:
-            cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
+        cls.BUILDING_REGISTRY.append(cls)  # Add class to registry.
+
+    @classmethod
+    def is_buildable(cls) -> bool:
+        return cls._schematic is not None
 
     @classmethod
     def get_schematic(cls, rotation: int = 0) -> Grid:
-        """Get the schematic with the desired rotation."""
+        """Get the schematic rotated by 90 degrees n times."""
+        if not cls._schematic:
+            raise ValueError(f"No schematic for {repr(cls)}")
         return cls._schematic.rotate(rotation)
     
     @classmethod
     def get_name(cls) -> str:
         return add_spaces_to_camelcase(repr(cls))
-
+    
 
 def grid_from_transposed(schematic: list[list[Tile]]):
     transpose = [list(i) for i in zip(*schematic, strict=True)]

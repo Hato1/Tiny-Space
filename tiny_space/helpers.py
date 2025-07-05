@@ -52,6 +52,11 @@ class Point(NamedTuple):
 
     def __repr__(self):
         return f"({self.x}, {self.y})"
+    
+    def __eq__(self, other):
+        if isinstance(other, Point):
+            return self.x == other.x and self.y == other.y
+        raise NotImplementedError(f"Comparing Point with {type(other)}")
 
 
 class GridPoint(Point): ...

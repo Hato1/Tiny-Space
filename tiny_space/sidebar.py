@@ -74,12 +74,12 @@ class SchematicBook(Surface):
         self.box = Box(box.x, box.y, box.width, 500)
         self.height = 500
         self.surface = pg.Surface((box.width, self.height))
-        self.visible_buildings = Building.BUILDING_REGISTRY
+        self.constructable_buildings = [b for b in Building.BUILDING_REGISTRY if b.is_buildable()]
 
     def render(self) -> pg.Surface:
         self.surface.fill((50, 50, 50))
         height = 15
-        for building in self.visible_buildings:
+        for building in self.constructable_buildings:
             font = pg.font.SysFont(None, 24)
             img = font.render(f"{building.get_name()}", True, (0, 0, 0))
             rect = img.get_rect(center=self.surface.get_rect().center)

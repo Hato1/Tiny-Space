@@ -1,6 +1,6 @@
 import logging
 
-from .buildings import *
+from .buildings import Building
 from .cursor import CursorStates, cursor
 
 
@@ -11,11 +11,12 @@ def debug_1():
 
 def debug_2():
     logging.warning("Debug 2")
+    building_registry = [b for b in Building.BUILDING_REGISTRY if b.is_buildable()]
     if b := cursor.get_building():
-        new_index = (Building.BUILDING_REGISTRY.index(b) + 1) % len(Building.BUILDING_REGISTRY)
-        building = Building.BUILDING_REGISTRY[new_index]
+        new_index = (building_registry.index(b) + 1) % len(building_registry)
+        building = building_registry[new_index]
     else:
-        building = Building.BUILDING_REGISTRY[0]
+        building = building_registry[0]
     cursor.set_state(CursorStates.BUILD_OUTLINE, building=building)
 
 
