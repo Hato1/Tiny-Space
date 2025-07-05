@@ -27,10 +27,10 @@ from tiny_space.thing import Nothing
 )
 def test_get_schematic(rotation, expected_id):
     rotations = [
-        Grid(initial=[[Iron, Iron], [Iron, Nothing]]),
-        Grid(initial=[[Iron, Iron], [Nothing, Iron]]),
-        Grid(initial=[[Nothing, Iron], [Iron, Iron]]),
-        Grid(initial=[[Iron, Nothing], [Iron, Iron]]),
+        Grid([[Iron, Iron], [Iron, Nothing]]),
+        Grid([[Iron, Iron], [Nothing, Iron]]),
+        Grid([[Nothing, Iron], [Iron, Iron]]),
+        Grid([[Iron, Nothing], [Iron, Iron]]),
     ]
 
     class TestBuilding(Building):

@@ -186,7 +186,7 @@ class World(Surface):
     default_grid_size = GridPoint(5, 7)
 
     def __init__(self, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
-        self.grid = Grid(grid_size)
+        self.grid = Grid.from_dimensions(grid_size)
         center = GridPoint(self.grid.size.x // 2, self.grid.size.y // 2)
         self.grid[center] = Base
         self.graphics = WorldGraphicsComponent(grid_size, cell_size)

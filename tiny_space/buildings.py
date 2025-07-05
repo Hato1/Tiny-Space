@@ -43,8 +43,9 @@ class Building(Thing):
     
 
 def grid_from_transposed(schematic: list[list[Tile]]):
+    """Transform a list of rows into a grid."""
     transpose = [list(i) for i in zip(*schematic, strict=True)]
-    return Grid(initial=transpose)
+    return Grid(transpose)
 
 
 class Base(Building):

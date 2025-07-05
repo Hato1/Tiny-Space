@@ -27,12 +27,13 @@ class Grid:
         width(self) -> int
     """
 
-    def __init__(self, size: GridPoint = GridPoint(0,0), initial: list[list[Tile]] | None = None):
-        self._grid: list[list[Tile]]
-        if initial:
-            self._grid = initial
-        else:
-            self._initialise_grid(size)
+    def __init__(self, initial: list[list[Tile]]):
+        self._grid = initial
+
+    @classmethod
+    def from_dimensions(cls, size: GridPoint = GridPoint(0, 0)):
+        """Make a grid of Nothing objects of the given dimensions."""
+        return cls([[Nothing for _ in range(size.y)] for _ in range(size.x)])
 
     def __eq__(self, other):
         if not isinstance(other, Grid):
@@ -56,10 +57,6 @@ class Grid:
     def size(self):
         return GridPoint(len(self._grid), len(self._grid[0]))
 
-    def _initialise_grid(self, size: GridPoint):
-        """Set tiles to a 2d grid according to grid_size and place the Base structure in the center tile."""
-        self._grid = [[Nothing for _ in range(size.y)] for _ in range(size.x)]
-
     def is_in_grid(self, point: GridPoint) -> bool:
         """Return whether point lies in the grid"""
         return 0 <= point.x < self.size.x and 0 <= point.y < self.size.y
@@ -67,7 +64,7 @@ class Grid:
     def get_subgrid(self, x, y, width, height) -> tuple[Grid, GridPoint]:
         """Return a Grid consisting of a subgrid of self"""
         sub_list = [column[y:y+height] for column in self._grid[x:x+width]]
-        subgrid = Grid(initial=sub_list[:])
+        subgrid = Grid(sub_list[:])
         assert subgrid.size == Point(width, height), f"{subgrid.size} is not equal to {Point(width, height)}!"
         return subgrid, GridPoint(x, y)
 
@@ -109,4 +106,4 @@ class Grid:
         grid: list[list[Tile]] = self._grid
         for _ in range(times):
             grid = list(zip(*grid[::-1], strict=True))  # type: ignore[arg-type]
-        return Grid(initial=grid)
+        return Grid(grid)

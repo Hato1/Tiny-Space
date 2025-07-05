@@ -50,7 +50,7 @@ class Cursor:
 
     def get_shape(self) -> Grid:
         if self._state in [CursorStates.RESOURCE_PLACE, CursorStates.BUILD_LOCATION]:
-            return Grid(initial=[[Resource]])
+            return Grid([[Resource]])
 
         assert self.selected_structure
         return self.selected_structure.get_schematic(self.rotation)
