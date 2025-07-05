@@ -4,7 +4,7 @@ from typing import Iterator, overload
 
 from tiny_space.thing import Nothing, Tile
 
-from .helpers import GridPoint, Point
+from .helpers import GridPoint
 
 
 class Grid:
@@ -78,7 +78,7 @@ class Grid:
         # TODO: Clean this up.
         sub_list = [column[y:y+height] for column in self._grid[x:x+width]]
         subgrid = Grid(sub_list[:])
-        assert subgrid.size == Point(width, height), f"{subgrid.size} is not equal to {Point(width, height)}!"
+        assert subgrid.size == GridPoint(width, height), f"{subgrid.size} is not equal to {GridPoint(width, height)}!"
         return subgrid, GridPoint(x, y)
 
     @property
