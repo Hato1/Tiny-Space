@@ -31,7 +31,7 @@ class Grid:
         self._grid = initial
 
     @classmethod
-    def from_dimensions(cls, size: GridPoint = GridPoint(0, 0)):
+    def from_dimensions(cls, size: GridPoint):
         """Make a grid of Nothing objects of the given dimensions."""
         return cls([[Nothing for _ in range(size.y)] for _ in range(size.x)])
 
