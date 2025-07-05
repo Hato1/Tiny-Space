@@ -12,7 +12,7 @@ from .buildings import Building
 from .helpers import Box, Event, Observer, Point
 from .score import score
 from .templates import Surface
-from .world import WorldGraphicsComponent
+from .world import Color, WorldGraphicsComponent
 
 
 class Scoreboard(Surface):
@@ -56,7 +56,7 @@ class ResourceQueueUI(Surface, Observer):
 
         if time_delta < animation_time:
             resources_to_display.insert(0, resources.Queue.last_resource_taken)
-            offset = -distance_between_resources * (time_delta / animation_time)
+            offset = int(-distance_between_resources * (time_delta / animation_time))
 
         for i, resource in enumerate(resources_to_display):
             self.surface.blit(resource.image(), (10 + offset + (distance_between_resources * i), 10))
@@ -81,7 +81,7 @@ class SchematicBook(Surface):
         height = 15
         for building in self.visible_buildings:
             font = pg.font.SysFont(None, 24)
-            img = font.render(f"{building.name}", True, (0, 0, 0))
+            img = font.render(f"{building.get_name()}", True, (0, 0, 0))
             rect = img.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(img, (rect[0], height))
             height += img.get_height() + 5
@@ -95,7 +95,7 @@ class SchematicBook(Surface):
                 schematic_renderer.box.width,
                 schematic_renderer.box.height,
             )
-            surf = schematic_renderer.render(building.get_schematic(), ignore_empty=True, background_color=(50, 50, 50))
+            surf = schematic_renderer.render(building.get_schematic(), ignore_empty=True, background_color=Color.DARK_GREY)
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))
             self.surface.blit(

@@ -1,3 +1,8 @@
+"""Definitions and helpers of resources.
+
+Resources are subclasses of Thing.
+Resources are used in the construction of Buildings.
+"""
 from __future__ import annotations
 
 import random
@@ -7,11 +12,9 @@ from .thing import Thing
 
 
 class Resource(Thing):
-    subdir = "resources"
+    asset_subdir = "resources"
 
     RESOURCE_REGISTRY: list[Type[Resource]] = []
-
-    score = 0
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -35,12 +38,14 @@ class Aerofoam(Resource):
 
 
 class ResourceQueue:
-    def __init__(self):
+    """Manages an eternal queue of semi-random resources."""
+    def __init__(self, seed: str | None = None):
         # Comment this out for actual random.
-        random.seed("debug")
+        if seed is not None:
+            random.seed(seed)
         self.queue: list[Type[Resource]] = []
         self.extend_queue()
-        self.last_resource_taken: Resource
+        self.last_resource_taken: Type[Resource]
 
     def extend_queue(self):
         """Repopulates the queue with an even balance of resources."""
@@ -58,7 +63,7 @@ class ResourceQueue:
         """Peek, but don't remove the next item from the queue"""
         return self.peek_n(1)[0]
 
-    def take_n(self, n) -> list[Type[Resource]]:
+    def take_n(self, n: int) -> list[Type[Resource]]:
         """Take the next n resources from the queue"""
         try:
             return self.peek_n(n)
@@ -71,7 +76,7 @@ class ResourceQueue:
         return self.take_n(1)[0]
 
 
-Queue = ResourceQueue()
+Queue = ResourceQueue("debug")
 
 if __name__ == "__main__":
     assert "Iron" in [str(r) for r in Resource.RESOURCE_REGISTRY]

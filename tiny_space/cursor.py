@@ -23,7 +23,7 @@ class Cursor:
         self._state: CursorStates = CursorStates.RESOURCE_PLACE
         self.rotation: int = 0
         self.selected_structure: Type[Building] | None = None
-        self.shadow_location: GridPoint = None
+        self.shadow_location: GridPoint | None = None
         # The grid coordinate is the mouse is currently over.
         self.moused_tile: GridPoint | None = None
 
@@ -53,11 +53,13 @@ class Cursor:
         if self._state in [CursorStates.RESOURCE_PLACE, CursorStates.BUILD_LOCATION]:
             return Grid(initial=[[Tile(Iron)]])
         else:
+            assert self.selected_structure
             return self.selected_structure.get_schematic(self.rotation)
 
-    def get_shadow_shape(self) -> Grid:
+    def get_shadow_shape(self) -> Grid | None:
         if self._state is not CursorStates.BUILD_LOCATION:
             return None
+        assert self.selected_structure
         return self.selected_structure.get_schematic(self.rotation)
 
     def get_building(self):

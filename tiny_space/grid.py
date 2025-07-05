@@ -26,7 +26,7 @@ class Grid:
         width(self) -> int
     """
 
-    def __init__(self, size: GridPoint | None = None, initial: list[list[Tile]] | None = None):
+    def __init__(self, size: GridPoint = GridPoint(0,0), initial: list[list[Tile]] | None = None):
         self._grid: list[list[Tile]]
         if initial:
             self._grid = initial
@@ -53,9 +53,9 @@ class Grid:
 
     @property
     def size(self):
-        return Point(len(self._grid), len(self._grid[0]))
+        return GridPoint(len(self._grid), len(self._grid[0]))
 
-    def _initialise_grid(self, size):
+    def _initialise_grid(self, size: GridPoint):
         """Set tiles to a 2d grid according to grid_size and place the Base structure in the center tile."""
         self._grid = [[Tile() for _ in range(size.y)] for _ in range(size.x)]
 

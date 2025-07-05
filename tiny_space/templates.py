@@ -12,7 +12,11 @@ class SurfaceInputComponent:
 
     @staticmethod
     def get_mouse_position(surface: Surface) -> Point:
-        return Point(*pg.mouse.get_pos()).relative_to(surface.box)
+        pos = Point(*pg.mouse.get_pos()).relative_to(surface.box)
+        if pos is None:
+            print("Error: Mouse has no position!")
+            return Point(0, 0)
+        return pos
 
 
 class Surface(ABC):

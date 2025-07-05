@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
+import re
 from typing import Any, Callable, NamedTuple, Self, TypeVar, cast
 
 
@@ -122,6 +123,7 @@ def handle_mouse_collision(surfaces, mouse_position: Point):
 
 class classproperty(property):
     def __get__(self, owner_self, owner_cls):
+        assert self.fget
         return self.fget(owner_cls)
 
 
@@ -132,11 +134,11 @@ class DummyAttribute:
 R = TypeVar("R")
 
 
-def abstract_attribute(obj: Callable[[Any], R] = None) -> R:
+def abstract_attribute(obj: Callable[[Any], R] | None = None) -> R:
     _obj = cast(Any, obj)
     if obj is None:
         _obj = DummyAttribute()
-    _obj.__is_abstract_attribute__ = True
+    _obj.__is_abstract_attribute__ = True # type: ignore[reportAttributeAccessIssue]
     return cast(R, _obj)
 
 
@@ -189,3 +191,15 @@ class Observer(ABC):
         Receive update from subject.
         """
         raise NotImplementedError
+
+
+def add_spaces_to_camelcase(text):
+    """Adds spaces to a camel case string.
+
+    Handles cases like 'camelCase' to 'camel Case' and 'IBMCorp' to 'IBM Corp'.
+    """
+    # Insert a space before an uppercase letter that is not at the beginning
+    # and is followed by a lowercase letter, or is preceded by a lowercase letter.
+    s1 = re.sub(r'([A-Z])([A-Z][a-z])', r'\1 \2', text)
+    # Insert a space before an uppercase letter that is preceded by a lowercase letter.
+    return re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', s1)

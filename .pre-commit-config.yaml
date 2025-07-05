@@ -47,7 +47,6 @@ repos:
     hooks:
     -   id: mypy
         args: [--no-strict-optional, --ignore-missing-imports]
-        additional_dependencies: [pydantic]
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
