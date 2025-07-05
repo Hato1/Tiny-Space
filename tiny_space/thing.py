@@ -44,3 +44,7 @@ class Thing(metaclass=ThingMeta):
 
 class Nothing:
     score = 0
+
+    @classmethod
+    def image(cls):
+        return None

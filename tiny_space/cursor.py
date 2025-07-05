@@ -62,7 +62,7 @@ class Cursor:
         assert self.selected_structure
         return self.selected_structure.get_schematic(self.rotation)
 
-    def get_building(self):
+    def get_building(self) -> type[Building] | None:
         return self.selected_structure
 
 
