@@ -2,7 +2,6 @@
 
 """
 
-
 from __future__ import annotations
 
 import itertools
@@ -143,7 +142,7 @@ class WorldGraphicsComponent(Surface):
             self._draw_cursor(grid, moused_tile, cursor.get_shape(), cursor_color)
 
     def draw_tile(self, thing: Type[Thing] | Type[Nothing], grid_coord: GridPoint):
-       if image := thing.image():
+        if image := thing.image():
             scaled = pygame.transform.scale(image, (self.cell_size // 1.5, self.cell_size // 1.5))
             asset_size = Point(*scaled.get_size())
             self.surface.blit(
@@ -170,11 +169,8 @@ class WorldGraphicsComponent(Surface):
 
 def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     return not any(
-        schematic_tile is not Nothing
-        and schematic_tile != grid_tile
-        for (_, schematic_tile), (_, grid_tile) in zip(
-            schematic, subgrid, strict=True
-        )
+        schematic_tile is not Nothing and schematic_tile != grid_tile
+        for (_, schematic_tile), (_, grid_tile) in zip(schematic, subgrid, strict=True)
     )
 
 
@@ -219,10 +215,7 @@ class World(Surface):
     def has_adjacent_tile(self, grid_coord: GridPoint) -> bool:
         """Returns True if an adjacent tile isn't empty."""
         orthogonal_tiles: list[GridPoint] = [grid_coord + direction for direction in ORTHOGONAL]
-        return any(
-            self.grid.is_in_grid(point) and self.grid[point] is not Nothing
-            for point in orthogonal_tiles
-        )
+        return any(self.grid.is_in_grid(point) and self.grid[point] is not Nothing for point in orthogonal_tiles)
 
     def fill_tile(self, point: GridPoint, thing: Type[Resource] | Type[Building]) -> bool:
         """Fill the tile, if possible.
@@ -239,10 +232,7 @@ class World(Surface):
         return True
 
     def calculate_score(self):
-        score.score = sum(
-            tile.score
-            for _pos, tile in self.grid
-        )
+        score.score = sum(tile.score for _pos, tile in self.grid)
 
     def lock_build_outline(self, location: GridPoint):
         """Checks whether a building can be build with selected resources"""

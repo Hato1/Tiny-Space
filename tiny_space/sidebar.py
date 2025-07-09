@@ -95,7 +95,9 @@ class SchematicBook(Surface):
                 schematic_renderer.box.width,
                 schematic_renderer.box.height,
             )
-            surf = schematic_renderer.render(building.get_schematic(), ignore_empty=True, background_color=Color.DARK_GREY)
+            surf = schematic_renderer.render(
+                building.get_schematic(), ignore_empty=True, background_color=Color.DARK_GREY
+            )
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))
             self.surface.blit(

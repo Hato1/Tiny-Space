@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, TypeVar, cast
 
@@ -7,8 +8,10 @@ import pygame as pg
 
 from .helpers import Box, Point
 
+
 class DummyAttribute:
     pass
+
 
 R = TypeVar("R")
 
@@ -17,7 +20,7 @@ def abstract_attribute(obj: Callable[[Any], R] | None = None) -> R:
     _obj = cast(Any, obj)
     if obj is None:
         _obj = DummyAttribute()
-    _obj.__is_abstract_attribute__ = True # type: ignore[reportAttributeAccessIssue]
+    _obj.__is_abstract_attribute__ = True  # type: ignore[reportAttributeAccessIssue,unused-ignore]
     return cast(R, _obj)
 
 
@@ -28,7 +31,7 @@ class SurfaceInputComponent:
     def get_mouse_position(surface: Surface) -> Point:
         pos = Point(*pg.mouse.get_pos()).relative_to(surface.box)
         if pos is None:
-            print("Error: Mouse has no position!")
+            logging.error("Error: Mouse has no position!")
             return Point(0, 0)
         return pos
 

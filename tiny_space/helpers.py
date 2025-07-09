@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
 from enum import Enum
-import re
 from typing import Any, NamedTuple, Self
 
 
@@ -32,7 +32,7 @@ class Point(NamedTuple):
     def relative_to(self, box: Box) -> Self | None:
         relative = self.__class__(self.x - box.x, self.y - box.y)
         # if relative.x >= box.max_x or relative.y >= box.max_y or relative.x < 0 or relative.y < 0:
-        if any(coord >= limit or coord < 0 for coord, limit in zip(relative, (box.max_x, box.max_y))):
+        if any(coord >= limit or coord < 0 for coord, limit in zip(relative, (box.max_x, box.max_y), strict=True)):
             return None
         return relative
 
@@ -52,7 +52,7 @@ class Point(NamedTuple):
 
     def __repr__(self):
         return f"({self.x}, {self.y})"
-    
+
     def __eq__(self, other):
         if isinstance(other, Point):
             return self.x == other.x and self.y == other.y
@@ -142,6 +142,7 @@ class Box(NamedTuple):
 
 class Event(Enum):
     """Event types to be sent via Notifier."""
+
     PlaceResource = 1
     PlaceBuilding = 2
 
@@ -196,6 +197,6 @@ def add_spaces_to_camelcase(text: str) -> str:
     """
     # Insert a space before an uppercase letter that is not at the beginning
     # and is followed by a lowercase letter, or is preceded by a lowercase letter.
-    s1 = re.sub(r'([A-Z])([A-Z][a-z])', r'\1 \2', text)
+    s1 = re.sub(r"([A-Z])([A-Z][a-z])", r"\1 \2", text)
     # Insert a space before an uppercase letter that is preceded by a lowercase letter.
-    return re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', s1)
+    return re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", s1)

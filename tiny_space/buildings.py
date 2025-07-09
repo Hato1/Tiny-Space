@@ -3,6 +3,7 @@
 Buildings are subclasses of Thing.
 Buildings are 'built' from collections of resources according to their Schematic.
 """
+
 from __future__ import annotations
 
 from typing import Type
@@ -11,7 +12,7 @@ from tiny_space.helpers import add_spaces_to_camelcase
 
 from .grid import Grid
 from .resources import Aerofoam, Crystal, Iron, Oil
-from .thing import Thing, Nothing, Tile
+from .thing import Nothing, Thing, Tile
 
 
 class Building(Thing):
@@ -36,11 +37,11 @@ class Building(Thing):
         if not cls._schematic:
             raise ValueError(f"No schematic for {repr(cls)}")
         return cls._schematic.rotate(rotation)
-    
+
     @classmethod
     def get_name(cls) -> str:
         return add_spaces_to_camelcase(repr(cls))
-    
+
 
 def grid_from_transposed(schematic: list[list[Tile]]):
     """Transform a list of rows into a grid."""
@@ -48,8 +49,8 @@ def grid_from_transposed(schematic: list[list[Tile]]):
     return Grid(transpose)
 
 
-class Base(Building):
-    ...
+class Base(Building): ...
+
 
 class WardenOutpost(Building):
     # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(Nothing), Tile(Aerofoam), Tile(Nothing)]]

@@ -3,6 +3,7 @@
 Resources are subclasses of Thing.
 Resources are used in the construction of Buildings.
 """
+
 from __future__ import annotations
 
 import random
@@ -39,6 +40,7 @@ class Aerofoam(Resource):
 
 class ResourceQueue:
     """Manages an eternal queue of semi-random resources."""
+
     def __init__(self, seed: str | None = None):
         # Comment this out for actual random.
         if seed is not None:

@@ -50,10 +50,7 @@ class Grid:
     def __eq__(self, other):
         if not isinstance(other, Grid):
             return False
-        return not any(
-            pos1 != pos2 or tile1 != tile2
-            for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True)
-        )
+        return not any(pos1 != pos2 or tile1 != tile2 for (pos1, tile1), (pos2, tile2) in zip(self, other, strict=True))
 
     def __repr__(self):
         string = "[["
@@ -76,7 +73,7 @@ class Grid:
     def get_subgrid(self, x, y, width, height) -> tuple[Grid, GridPoint]:
         """Return a Grid consisting of a subgrid of self"""
         # TODO: Clean this up.
-        sub_list = [column[y:y+height] for column in self._grid[x:x+width]]
+        sub_list = [column[y : y + height] for column in self._grid[x : x + width]]
         subgrid = Grid(sub_list[:])
         assert subgrid.size == GridPoint(width, height), f"{subgrid.size} is not equal to {GridPoint(width, height)}!"
         return subgrid, GridPoint(x, y)
