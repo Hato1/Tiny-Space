@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 import re
-from typing import Any, Callable, NamedTuple, Self, TypeVar, cast
+from typing import Any, NamedTuple, Self
 
 
 class Point(NamedTuple):
@@ -59,7 +59,15 @@ class Point(NamedTuple):
         raise NotImplementedError(f"Comparing Point with {type(other)}")
 
 
-class GridPoint(Point): ...
+class GridPoint(Point):
+    """A point lying on the game-grid board.
+
+    Used to clarify when a point is in the pixel grid
+    or the game grid.
+
+    TODO: Test that typehinting/mypy complains when
+    using one class to a function requesting the other.
+    """
 
 
 # Movement vectors
@@ -118,36 +126,22 @@ class Box(NamedTuple):
         raise ValueError
 
 
-def handle_mouse_collision(surfaces, mouse_position: Point):
-    for surface in surfaces:
-        if surface.rect.collidepoint(mouse_position):
-            # ToDo: Add subtract method to Point.
-            relative_mouse_position = Point(mouse_position.x - surface.rect.x, mouse_position.y - surface.rect.y)
-            surface.collision(relative_mouse_position)
+# def handle_mouse_collision(surfaces, mouse_position: Point):
+#     for surface in surfaces:
+#         if surface.rect.collidepoint(mouse_position):
+#             # TODO: Add subtract method to Point.
+#             relative_mouse_position = Point(mouse_position.x - surface.rect.x, mouse_position.y - surface.rect.y)
+#             surface.collision(relative_mouse_position)
 
 
-class classproperty(property):
-    def __get__(self, owner_self, owner_cls):
-        assert self.fget
-        return self.fget(owner_cls)
-
-
-class DummyAttribute:
-    pass
-
-
-R = TypeVar("R")
-
-
-def abstract_attribute(obj: Callable[[Any], R] | None = None) -> R:
-    _obj = cast(Any, obj)
-    if obj is None:
-        _obj = DummyAttribute()
-    _obj.__is_abstract_attribute__ = True # type: ignore[reportAttributeAccessIssue]
-    return cast(R, _obj)
+# class classproperty(property):
+#     def __get__(self, owner_self, owner_cls):
+#         assert self.fget
+#         return self.fget(owner_cls)
 
 
 class Event(Enum):
+    """Event types to be sent via Notifier."""
     PlaceResource = 1
     PlaceBuilding = 2
 
@@ -178,9 +172,6 @@ class Notifier:
             observer.event_listener(event)
 
 
-Notify = Notifier.notify
-
-
 class Observer(ABC):
     """
     The Observer interface declares the update method, used by subjects.
@@ -198,7 +189,7 @@ class Observer(ABC):
         raise NotImplementedError
 
 
-def add_spaces_to_camelcase(text):
+def add_spaces_to_camelcase(text: str) -> str:
     """Adds spaces to a camel case string.
 
     Handles cases like 'camelCase' to 'camel Case' and 'IBMCorp' to 'IBM Corp'.

@@ -1,10 +1,24 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Any, Callable, TypeVar, cast
 
 import pygame as pg
 
-from .helpers import Box, Point, abstract_attribute
+from .helpers import Box, Point
+
+class DummyAttribute:
+    pass
+
+R = TypeVar("R")
+
+
+def abstract_attribute(obj: Callable[[Any], R] | None = None) -> R:
+    _obj = cast(Any, obj)
+    if obj is None:
+        _obj = DummyAttribute()
+    _obj.__is_abstract_attribute__ = True # type: ignore[reportAttributeAccessIssue]
+    return cast(R, _obj)
 
 
 class SurfaceInputComponent:

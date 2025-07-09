@@ -15,7 +15,7 @@ import pygame
 from .buildings import Base, Building
 from .cursor import CursorStates, cursor
 from .grid import Grid
-from .helpers import ORTHOGONAL, Box, Event, GridPoint, Notify, Point
+from .helpers import ORTHOGONAL, Box, Event, GridPoint, Notifier, Point
 from .resources import Queue, Resource
 from .score import score
 from .templates import Surface, SurfaceInputComponent
@@ -206,7 +206,7 @@ class World(Surface):
                 resource = Queue.peek()
                 if self.fill_tile(moused_tile, resource):
                     Queue.take()
-                    Notify(Event.PlaceResource)
+                    Notifier.notify(Event.PlaceResource)
             case CursorStates.BUILD_OUTLINE:
                 self.lock_build_outline(moused_tile)
             case CursorStates.BUILD_LOCATION:
