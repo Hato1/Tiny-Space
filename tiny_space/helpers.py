@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, NamedTuple, Self
 
+import pygame as pg
+
 
 class Point(NamedTuple):
     """A class representing a point with x and y coordinates.
@@ -123,6 +125,15 @@ class Box(NamedTuple):
                     self.max_y >= other.max_y,
                 ]
             )
+        elif isinstance(other, pg.Rect):
+            return all(
+                [
+                    self.x <= other.left,
+                    self.y <= other.top,
+                    self.max_x >= other.right,
+                    self.max_y >= other.bottom,
+                ]
+            )
         raise ValueError
 
 
@@ -174,9 +185,7 @@ class Notifier:
 
 
 class Observer(ABC):
-    """
-    The Observer interface declares the update method, used by subjects.
-    """
+    """Subclass from Observer to receive events."""
 
     def __init__(self, **kwargs):
         Notifier.attach(self)

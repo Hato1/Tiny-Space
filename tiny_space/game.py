@@ -5,6 +5,8 @@ from enum import Enum
 
 import pygame as pg
 
+import config
+
 from . import debug
 from .helpers import Box, Point
 from .sidebar import Sidebar
@@ -22,25 +24,25 @@ class Game:
     def __init__(self):
         logging.info("Starting game...")
         self.state = State.RESTARTING
-        self.box = Box(0, 0, 640, 400)
 
         self.world: World
         self.sidebar: Sidebar
         self.surfaces: list[Surface] = []
 
         pg.init()
-        self._screen = pg.display.set_mode(self.box.dims, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
+        pg.display.set_caption("Tiny Space")
+        self._screen = pg.display.set_mode(config.RESOLUTION, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
         self.clock = pg.time.Clock()
         self.main_loop()
 
     def reset(self):
         """Reset the game and start it again."""
         # The Sidebar occupies the right 30% of the display.
-        horizontal_split = int(self.box.width * 0.7)
-        sidebar_width = self.box.width - horizontal_split
+        horizontal_split = int(self._screen.width * 0.7)
+        sidebar_width = self._screen.width - horizontal_split
         self.world = World()
-        self.world.graphics.center_box(Box(0, 0, horizontal_split, self.box.height))
-        self.sidebar = Sidebar(Box(horizontal_split, 0, sidebar_width, self.box.height))
+        self.world.graphics.center_box(Box(0, 0, horizontal_split, self._screen.height))
+        self.sidebar = Sidebar(Box(horizontal_split, 0, sidebar_width, self._screen.height))
         self.surfaces = [
             self.world,
             self.sidebar,
@@ -92,7 +94,7 @@ class Game:
         """Draw all the surfaces to the display."""
         self._screen.fill((0, 0, 0))
         for surface in self.surfaces:
-            assert surface.box in self.box, f"{surface.box} does not fit in {self.box}!"
+            assert surface.box in self._screen.get_rect(), f"{surface.box} does not fit in display!"
             if surface == self.world:
                 # Draw a nice border. Bordered surfaces should ideally be less hacky...
                 x, y, width, height = surface.box
