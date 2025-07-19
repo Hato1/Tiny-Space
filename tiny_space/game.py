@@ -8,7 +8,7 @@ import pygame as pg
 import config
 
 from . import debug
-from .helpers import Box, Point
+from .helpers import Point
 from .sidebar import Sidebar
 from .templates import GraphicsComponent
 from .world import World
@@ -73,7 +73,8 @@ class Game:
         """Handle a single mouseclick for each surface under the mouse."""
         mouse_position = Point(*event.pos)
         for pos, surface in self.surfaces:
-            if relative_position := mouse_position.relative_to(Box(*pos, *surface.surface.get_rect().size)):
+            relative_position = mouse_position - pos
+            if surface.surface.get_rect().collidepoint(relative_position):
                 surface.process_inputs(relative_position)
 
     def process_input(self, event):
@@ -100,8 +101,8 @@ class Game:
         mouse_pos = Point(*pg.mouse.get_pos())
         self._screen.fill((0, 0, 0))
         for pos, surface in self.surfaces:
-            box = Box(*pos, *surface.surface.get_rect().size)
-            assert box in self._screen.get_rect(), f"{box} does not fit in display!"
+            rect = pg.Rect(*pos, *surface.surface.get_rect().size)
+            assert rect in self._screen.get_rect(), f"{rect} does not fit in display!"
             if surface == self.world:
                 # Draw a nice border. Bordered surfaces should ideally be less hacky...
                 width, height = surface.surface.get_rect().size
