@@ -141,20 +141,6 @@ class Box(NamedTuple):
         raise ValueError
 
 
-# def handle_mouse_collision(surfaces, mouse_position: Point):
-#     for surface in surfaces:
-#         if surface.rect.collidepoint(mouse_position):
-#             # TODO: Add subtract method to Point.
-#             relative_mouse_position = Point(mouse_position.x - surface.rect.x, mouse_position.y - surface.rect.y)
-#             surface.collision(relative_mouse_position)
-
-
-# class classproperty(property):
-#     def __get__(self, owner_self, owner_cls):
-#         assert self.fget
-#         return self.fget(owner_cls)
-
-
 class Event(Enum):
     """Event types to be sent via Notifier."""
 
