@@ -14,7 +14,7 @@ from . import buildings
 from .buildings import Building
 from .cursor import CursorStates, cursor
 from .grid import Grid
-from .helpers import ORTHOGONAL, Box, Event, GridPoint, Notifier, Point
+from .helpers import ORTHOGONAL, Event, GridPoint, Notifier, Point
 from .resources import Queue, Resource
 from .score import score
 from .templates import GraphicsComponent
@@ -246,16 +246,16 @@ class World(GraphicsComponent):
         offset = cursor.get_building_location()
         assert offset
         # Maintain outline
-        valid_range = Box(
+        valid_range = pg.Rect(
             offset.x,
             offset.y,
             schematic.size.x,
             schematic.size.y,
         )
-        # FIXME: Replace empty check with check that build location is in cursor schematic.
-        #  Otherwise you can build atop of any tile.
-        if location in valid_range and self.grid[location] is not Nothing:
+        if valid_range.collidepoint(location) and schematic[location - offset] is not Nothing:
             self.remove_things_in_schematic()
             self.grid[location] = cursor.get_building() or Nothing
             self.calculate_score()
+        else:
+            logging.warning("Invalid building placement, returning to resource placement.")
         cursor.set_state(CursorStates.RESOURCE_PLACE)
