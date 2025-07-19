@@ -10,7 +10,7 @@ import config
 from . import debug
 from .helpers import Box, Point
 from .sidebar import Sidebar
-from .templates import Surface
+from .templates import GraphicsComponent
 from .world import World
 
 
@@ -27,7 +27,7 @@ class Game:
 
         self.world: World
         self.sidebar: Sidebar
-        self.surfaces: list[Surface] = []
+        self.surfaces: list[tuple[Point, GraphicsComponent]] = []
 
         pg.init()
         pg.display.set_caption("Tiny Space")
@@ -40,12 +40,17 @@ class Game:
         # The Sidebar occupies the right 30% of the display.
         horizontal_split = int(self._screen.width * 0.7)
         sidebar_width = self._screen.width - horizontal_split
+
         self.world = World()
-        self.world.graphics.center_box(Box(0, 0, horizontal_split, self._screen.height))
-        self.sidebar = Sidebar(Box(horizontal_split, 0, sidebar_width, self._screen.height))
+        assert self.world.surface.get_width() < horizontal_split, "Grid too wide for display area!"
+        assert self.world.surface.get_height() < self._screen.height, "Grid too tall for display area!"
+        world_pos = self.world.surface.get_rect(center=(horizontal_split // 2, self._screen.height // 2)).topleft
+
+        self.sidebar = Sidebar(Point(sidebar_width, self._screen.height))
+
         self.surfaces = [
-            self.world,
-            self.sidebar,
+            (Point(*world_pos), self.world),
+            (Point(horizontal_split, 0), self.sidebar),
         ]
         self.state = State.RUNNING
 
@@ -67,8 +72,8 @@ class Game:
     def process_mouse_input(self, event):
         """Handle a single mouseclick for each surface under the mouse."""
         mouse_position = Point(*event.pos)
-        for surface in self.surfaces:
-            if relative_position := mouse_position.relative_to(surface.box):
+        for pos, surface in self.surfaces:
+            if relative_position := mouse_position.relative_to(Box(*pos, *surface.surface.get_rect().size)):
                 surface.process_inputs(relative_position)
 
     def process_input(self, event):
@@ -87,19 +92,21 @@ class Game:
 
     def update(self):
         """Update the game. Runs every frame."""
-        for surface in self.surfaces:
+        for _pos, surface in self.surfaces:
             surface.update()
 
     def render(self):
         """Draw all the surfaces to the display."""
+        mouse_pos = Point(*pg.mouse.get_pos())
         self._screen.fill((0, 0, 0))
-        for surface in self.surfaces:
-            assert surface.box in self._screen.get_rect(), f"{surface.box} does not fit in display!"
+        for pos, surface in self.surfaces:
+            box = Box(*pos, *surface.surface.get_rect().size)
+            assert box in self._screen.get_rect(), f"{box} does not fit in display!"
             if surface == self.world:
                 # Draw a nice border. Bordered surfaces should ideally be less hacky...
-                x, y, width, height = surface.box
-                pg.draw.rect(self._screen, (30, 30, 200), (x - 1, y - 1, width + 2, height + 2))
-            self._screen.blit(surface.render(), surface.box.top_left)
+                width, height = surface.surface.get_rect().size
+                pg.draw.rect(self._screen, (30, 30, 200), (pos[0] - 1, pos[1] - 1, width + 2, height + 2))
+            self._screen.blit(surface.render(mouse_pos - pos), pos)
         pg.display.update()
 
     def main_loop(self):

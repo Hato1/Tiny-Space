@@ -11,15 +11,15 @@ from . import resources
 from .buildings import Building
 from .helpers import Box, Event, Observer, Point
 from .score import score
-from .templates import Surface
+from .templates import GraphicsComponent
 from .world import Color, WorldGraphicsComponent
 
 
-class Scoreboard(Surface):
-    def __init__(self, box: Box):
-        self.box = Box(box.x, box.y, box.width, 50)
+class Scoreboard(GraphicsComponent):
+    def __init__(self, dims: Point):
+        self.box = Box(0, 0, dims[0], 50)
         self.height = 50
-        self.surface = pg.Surface((box.width, self.height))
+        self.surface = pg.Surface((dims[0], 50))
 
     def render(self) -> pg.Surface:
         self.surface.fill((255, 255, 0))
@@ -32,12 +32,12 @@ class Scoreboard(Surface):
         pass
 
 
-class ResourceQueueUI(Surface, Observer):
-    def __init__(self, box):
+class ResourceQueueUI(GraphicsComponent, Observer):
+    def __init__(self, dims: Point):
         super().__init__()
-        self.box = Box(box.x, box.y, box.width, 50)
+        self.box = Box(0, 0, dims[0], 50)
         self.height = 50
-        self.surface = pg.Surface((box.width, self.height))
+        self.surface = pg.Surface((dims[0], 50))
         self.resources_to_render = 5
         self.resource_queue_head: Type[resources.Resource] = resources.Resource
         self.last_resource_placed_time: int = -100000
@@ -69,11 +69,11 @@ class ResourceQueueUI(Surface, Observer):
         pass
 
 
-class SchematicBook(Surface):
-    def __init__(self, box: Box):
-        self.box = Box(box.x, box.y, box.width, 500)
+class SchematicBook(GraphicsComponent):
+    def __init__(self, dims: Point):
+        self.box = Box(0, 0, dims[0], 500)
         self.height = 500
-        self.surface = pg.Surface((box.width, self.height))
+        self.surface = pg.Surface((dims[0], 500))
         self.constructable_buildings = [b for b in Building.BUILDING_REGISTRY if b.is_buildable()]
 
     def render(self) -> pg.Surface:
@@ -87,16 +87,10 @@ class SchematicBook(Surface):
             height += img.get_height() + 5
 
             schematic_renderer = WorldGraphicsComponent(building.get_schematic().size, 25)
-            schematic_renderer.draw_cursor = lambda grid: None  # type: ignore[method-assign]
+            schematic_renderer.draw_cursor = lambda grid, mouse_pos: None  # type: ignore[method-assign]
             schematic_renderer.draw_build_hammers = lambda: True  # type: ignore[method-assign]
-            schematic_renderer.box = Box(
-                self.box.x + schematic_renderer.surface.get_rect(center=self.surface.get_rect().center)[0],
-                self.box.y + height,
-                schematic_renderer.box.width,
-                schematic_renderer.box.height,
-            )
             surf = schematic_renderer.render(
-                building.get_schematic(), ignore_empty=True, background_color=Color.DARK_GREY
+                building.get_schematic(), mouse_pos=Point(-1, -1), ignore_empty=True, background_color=Color.DARK_GREY
             )
             rect = surf.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(surf, (rect[0], height))
@@ -110,29 +104,29 @@ class SchematicBook(Surface):
         pass
 
 
-class Sidebar(Surface):
-    def __init__(self, box):
-        self.box = box
-        self.surface = pg.Surface(self.box.dims)
+class Sidebar(GraphicsComponent):
+    def __init__(self, dims: Point):
+        self.box = Box(0, 0, *dims)
+        self.surface = pg.Surface(dims)
 
-        subbox = [self.box.x, self.box.y, self.box.width, self.box.height]
-        self.surfaces: list[Surface] = []
-        surface_types: list[Type[Surface]] = [
+        # subbox = [self.box.x, self.box.y, self.box.width, self.box.height]
+        self.surfaces: list[GraphicsComponent] = []
+        surface_types: list[Type[GraphicsComponent]] = [
             Scoreboard,
             ResourceQueueUI,
             SchematicBook,
         ]
         for surface in surface_types:
-            self.surfaces.append(surface(Box(*subbox)))  # type: ignore[call-arg]
-            subbox[1] += self.surfaces[-1].box.height
+            self.surfaces.append(surface(Point(self.box.width, self.box.height)))  # type: ignore[call-arg]
+            # subbox[1] += self.surfaces[-1].box.height
 
-    def render(self) -> pg.Surface:
+    def render(self, *args, **kwargs) -> pg.Surface:
         vertical_cursor = 0
         self.surface.fill((255, 0, 0))
         for surface in self.surfaces:
-            surface.box = Box(self.box.x, self.box.y + vertical_cursor, surface.box.width, self.box.height)
+            bbox = Box(self.box.x, self.box.y + vertical_cursor, self.box.width, self.box.height)
             rendered = surface.render()
-            relative_box = Box(*(surface.box.top_left - self.box.top_left), *self.box.dims)
+            relative_box = Box(*(bbox.top_left - self.box.top_left), *self.box.dims)
             self.surface.blit(rendered, relative_box)
             vertical_cursor += rendered.get_size()[1]
         return self.surface

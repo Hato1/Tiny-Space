@@ -9,7 +9,7 @@ import logging
 from enum import Enum
 from typing import Type
 
-import pygame
+import pygame as pg
 
 from .buildings import Base, Building
 from .cursor import CursorStates, cursor
@@ -17,7 +17,7 @@ from .grid import Grid
 from .helpers import ORTHOGONAL, Box, Event, GridPoint, Notifier, Point
 from .resources import Queue, Resource
 from .score import score
-from .templates import Surface, SurfaceInputComponent
+from .templates import GraphicsComponent
 from .thing import Nothing, Thing
 
 
@@ -32,19 +32,18 @@ class Color(tuple, Enum):
     DARK_GREY = (50, 50, 50)
 
 
-class WorldGraphicsComponent(Surface):
+class WorldGraphicsComponent(GraphicsComponent):
     """Handles the world surface and drawing to it."""
 
     def __init__(self, grid_size: GridPoint, cell_size: int):
         self.cell_size = cell_size
-        self.surface = pygame.Surface(grid_size * cell_size)
-        self.box = Box(*self.surface.get_rect())
+        self.surface = pg.Surface(grid_size * cell_size)
         self.hammer_assets = [
-            pygame.image.load("assets/hammer/hammer1.png"),
-            pygame.image.load("assets/hammer/hammer2.png"),
-            pygame.image.load("assets/hammer/hammer3.png"),
-            pygame.image.load("assets/hammer/hammer4.png"),
-            pygame.image.load("assets/hammer/hammer5.png"),
+            pg.image.load("assets/hammer/hammer1.png"),
+            pg.image.load("assets/hammer/hammer2.png"),
+            pg.image.load("assets/hammer/hammer3.png"),
+            pg.image.load("assets/hammer/hammer4.png"),
+            pg.image.load("assets/hammer/hammer5.png"),
         ]
         self.frame_count = 0
 
@@ -52,7 +51,7 @@ class WorldGraphicsComponent(Surface):
         """Set self.box position to be in the center of box."""
         assert self.surface.get_width() < box.width, "Grid too wide for display area!"
         assert self.surface.get_height() < box.height, "Grid too tall for display area!"
-        self.box = Box(*self.surface.get_rect(center=box.center))
+        # self.box = Box(*self.surface.get_rect(center=box.center))
 
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Convert pixel coordinate to grid coordinate."""
@@ -63,12 +62,12 @@ class WorldGraphicsComponent(Surface):
         return Point(grid_point.x * self.cell_size, grid_point.y * self.cell_size)
 
     def draw_line(self, start: Point, end: Point, color=Color.BLUE, line_width=2):
-        pygame.draw.line(self.surface, color, start, end, line_width)
+        pg.draw.line(self.surface, color, start, end, line_width)
 
     def draw_box(self, start: Point, size: Point | None = None, color=Color.BLUE, width=1):
         # If width is 0 then the box will be filled.
         size = size or Point(self.cell_size, self.cell_size)
-        pygame.draw.rect(self.surface, color, (*start, *size), width=width)
+        pg.draw.rect(self.surface, color, (*start, *size), width=width)
 
     def draw_grid_surface(self, grid: Grid, skip_nothing: bool = False):
         """Draw tile outlines. Use ignore_empty to draw outlines of full tiles."""
@@ -78,10 +77,9 @@ class WorldGraphicsComponent(Surface):
             self.draw_box(self.grid_to_pixels(pos), color=Color.BLACK, width=0)
             self.draw_box(self.grid_to_pixels(pos), color=Color.BLUE)
 
-    def get_moused_tile(self) -> GridPoint | None:
-        mouse_coord = Point(*pygame.mouse.get_pos())
-        if relative := mouse_coord.relative_to(self.box):
-            return self.pixels_to_grid(relative)
+    def get_moused_tile(self, mouse_coord: Point) -> GridPoint | None:
+        if self.surface.get_rect().collidepoint(mouse_coord):
+            return self.pixels_to_grid(mouse_coord)
         return None
 
     def _draw_cursor(self, grid: Grid, cursor_location: GridPoint, shape: Grid, color=Color.CYAN, width=3):
@@ -119,7 +117,7 @@ class WorldGraphicsComponent(Surface):
                     ),
                 )
 
-    def draw_cursor(self, grid: Grid):
+    def draw_cursor(self, grid: Grid, mouse_pos: Point):
         # TODO: Make this method less ugly.
         if shadow := cursor.get_shadow_shape():
             shadow_location = cursor.get_building_location()
@@ -127,7 +125,7 @@ class WorldGraphicsComponent(Surface):
             # TODO: Add arrows pointing at the cursor tiles (They're valid build placements)
             self._draw_cursor(grid, shadow_location, shadow, Color.GREEN)
 
-        if moused_tile := self.get_moused_tile():
+        if moused_tile := self.get_moused_tile(mouse_pos):
             cursor_color = Color.CYAN
             if cursor.get_state() == CursorStates.BUILD_OUTLINE:
                 if grid.is_in_grid(moused_tile + cursor.get_shape().size - GridPoint(1, 1)):
@@ -143,7 +141,7 @@ class WorldGraphicsComponent(Surface):
 
     def draw_tile(self, thing: Type[Thing] | Type[Nothing], grid_coord: GridPoint):
         if image := thing.image():
-            scaled = pygame.transform.scale(image, (self.cell_size // 1.5, self.cell_size // 1.5))
+            scaled = pg.transform.scale(image, (self.cell_size // 1.5, self.cell_size // 1.5))
             asset_size = Point(*scaled.get_size())
             self.surface.blit(
                 scaled,
@@ -157,10 +155,12 @@ class WorldGraphicsComponent(Surface):
         for point, tile in grid:
             self.draw_tile(tile, point)
 
-    def render(self, grid: Grid, ignore_empty: bool = False, background_color=Color.BLUE) -> pygame.Surface:
+    def render(
+        self, grid: Grid, mouse_pos: Point, ignore_empty: bool = False, background_color=Color.BLUE
+    ) -> pg.Surface:
         self.surface.fill(background_color)
         self.draw_grid_surface(grid, ignore_empty)
-        self.draw_cursor(grid)
+        self.draw_cursor(grid, mouse_pos)
         self.draw_tiles(grid)
         self.draw_build_hammers()
         self.frame_count += 1
@@ -174,11 +174,11 @@ def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     )
 
 
-class WorldInputComponent(SurfaceInputComponent):
-    pass
+# class WorldInputComponent(SurfaceInputComponent):
+#     pass
 
 
-class World(Surface):
+class World(GraphicsComponent):
     default_grid_size = GridPoint(5, 7)
 
     def __init__(self, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
@@ -186,11 +186,11 @@ class World(Surface):
         center = GridPoint(self.grid.size.x // 2, self.grid.size.y // 2)
         self.grid[center] = Base
         self.graphics = WorldGraphicsComponent(grid_size, cell_size)
-        self.input = WorldInputComponent()
+        # self.input = WorldInputComponent()
 
     @property
-    def box(self):
-        return self.graphics.box
+    def surface(self):
+        return self.graphics.surface
 
     def update(self):
         pass
@@ -208,9 +208,9 @@ class World(Surface):
             case CursorStates.BUILD_LOCATION:
                 self.confirm_building(moused_tile)
 
-    def render(self) -> pygame.Surface:
+    def render(self, mouse_pos: Point) -> pg.Surface:
         """Blit the grid to the center of the canvas."""
-        return self.graphics.render(self.grid)
+        return self.graphics.render(self.grid, mouse_pos)
 
     def has_adjacent_tile(self, grid_coord: GridPoint) -> bool:
         """Returns True if an adjacent tile isn't empty."""

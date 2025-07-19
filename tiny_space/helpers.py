@@ -52,6 +52,10 @@ class Point(NamedTuple):
         """Multiply vector by a scalar"""
         return self.__class__(self.x * other, self.y * other)
 
+    def __floordiv__(self, other: int) -> Self:
+        """Multiply vector by a scalar"""
+        return self.__class__(self.x // other, self.y // other)
+
     def __repr__(self):
         return f"({self.x}, {self.y})"
 
