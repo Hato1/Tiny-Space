@@ -3,9 +3,7 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, NamedTuple, Self
-
-import pygame as pg
+from typing import NamedTuple, Self
 
 
 class Point(NamedTuple):
@@ -30,13 +28,6 @@ class Point(NamedTuple):
 
     x: int
     y: int
-
-    def relative_to(self, box: Box) -> Self | None:
-        relative = self.__class__(self.x - box.x, self.y - box.y)
-        # if relative.x >= box.max_x or relative.y >= box.max_y or relative.x < 0 or relative.y < 0:
-        if any(coord >= limit or coord < 0 for coord, limit in zip(relative, (box.max_x, box.max_y), strict=True)):
-            return None
-        return relative
 
     def __add__(self, other: Point | tuple) -> Self:
         if isinstance(other, Point):
@@ -83,62 +74,6 @@ DOWN = GridPoint(0, 1)
 UP = GridPoint(0, -1)
 
 ORTHOGONAL = [LEFT, RIGHT, DOWN, UP]
-
-
-class Box(NamedTuple):
-    x: int
-    y: int
-    width: int
-    height: int
-
-    @property
-    def max_x(self):
-        return self.x + self.width
-
-    @property
-    def max_y(self):
-        return self.y + self.height
-
-    @property
-    def top_left(self):
-        return Point(self.x, self.y)
-
-    @property
-    def dims(self):
-        return Point(self.width, self.height)
-
-    @property
-    def center(self):
-        return self.x + self.width // 2, self.y + self.height // 2
-
-    def __contains__(self, other: Point | Box | Any) -> bool:
-        """Returns true if the point/box is enclosed inside of self."""
-        if isinstance(other, Point):
-            return all(
-                [
-                    self.x <= other.x <= self.max_x,
-                    self.y <= other.y <= self.max_y,
-                ]
-            )
-        elif isinstance(other, Box):
-            return all(
-                [
-                    self.x <= other.x,
-                    self.y <= other.y,
-                    self.max_x >= other.max_x,
-                    self.max_y >= other.max_y,
-                ]
-            )
-        elif isinstance(other, pg.Rect):
-            return all(
-                [
-                    self.x <= other.left,
-                    self.y <= other.top,
-                    self.max_x >= other.right,
-                    self.max_y >= other.bottom,
-                ]
-            )
-        raise ValueError
 
 
 class Event(Enum):
