@@ -9,7 +9,7 @@ import pygame as pg
 
 from . import resources
 from .buildings import Building
-from .helpers import Box, Event, Observer, Point
+from .helpers import Event, Observer, Point
 from .score import score
 from .templates import GraphicsComponent
 from .world import Color, WorldGraphicsComponent
@@ -17,14 +17,12 @@ from .world import Color, WorldGraphicsComponent
 
 class Scoreboard(GraphicsComponent):
     def __init__(self, dims: Point):
-        self.box = Box(0, 0, dims[0], 50)
-        self.height = 50
-        self.surface = pg.Surface((dims[0], 50))
+        self.surface = pg.Surface(dims)
 
     def render(self) -> pg.Surface:
-        self.surface.fill((255, 255, 0))
+        self.surface.fill(pg.Color("yellow"))
         font = pg.font.SysFont(None, 24)
-        img = font.render(f"Score: {score.score}", True, (0, 0, 0))
+        img = font.render(f"Score: {score.score}", True, pg.Color("black"))
         self.surface.blit(img, (20, 20))
         return self.surface
 
@@ -33,12 +31,13 @@ class Scoreboard(GraphicsComponent):
 
 
 class ResourceQueueUI(GraphicsComponent, Observer):
+    distance_between_resources = 40
+    resources_to_render = 5
+    animation_duration = 250
+
     def __init__(self, dims: Point):
         super().__init__()
-        self.box = Box(0, 0, dims[0], 50)
-        self.height = 50
-        self.surface = pg.Surface((dims[0], 50))
-        self.resources_to_render = 5
+        self.surface = pg.Surface(dims)
         self.resource_queue_head: Type[resources.Resource] = resources.Resource
         self.last_resource_placed_time: int = -100000
 
@@ -47,19 +46,17 @@ class ResourceQueueUI(GraphicsComponent, Observer):
             self.last_resource_placed_time = pg.time.get_ticks()
 
     def render(self) -> pg.Surface:
-        self.surface.fill((255, 255, 255))
-        distance_between_resources = 40
+        self.surface.fill(pg.Color("white"))
         resources_to_display = resources.Queue.peek_n(self.resources_to_render)
         time_delta = pg.time.get_ticks() - self.last_resource_placed_time
-        animation_time = 250
         offset = 0
 
-        if time_delta < animation_time:
+        if time_delta < self.animation_duration:
             resources_to_display.insert(0, resources.Queue.last_resource_taken)
-            offset = int(-distance_between_resources * (time_delta / animation_time))
+            offset = int(-self.distance_between_resources * (time_delta / self.animation_duration))
 
         for i, resource in enumerate(resources_to_display):
-            self.surface.blit(resource.image(), (10 + offset + (distance_between_resources * i), 10))
+            self.surface.blit(resource.image(), (10 + offset + (self.distance_between_resources * i), 10))
         return self.surface
 
     def update(self):
@@ -71,9 +68,7 @@ class ResourceQueueUI(GraphicsComponent, Observer):
 
 class SchematicBook(GraphicsComponent):
     def __init__(self, dims: Point):
-        self.box = Box(0, 0, dims[0], 500)
-        self.height = 500
-        self.surface = pg.Surface((dims[0], 500))
+        self.surface = pg.Surface(dims)
         self.constructable_buildings = [b for b in Building.BUILDING_REGISTRY if b.is_buildable()]
 
     def render(self) -> pg.Surface:
@@ -81,7 +76,7 @@ class SchematicBook(GraphicsComponent):
         height = 15
         for building in self.constructable_buildings:
             font = pg.font.SysFont(None, 24)
-            img = font.render(f"{building.get_name()}", True, (0, 0, 0))
+            img = font.render(f"{building.get_name()}", True, pg.Color("black"))
             rect = img.get_rect(center=self.surface.get_rect().center)
             self.surface.blit(img, (rect[0], height))
             height += img.get_height() + 5
@@ -106,28 +101,20 @@ class SchematicBook(GraphicsComponent):
 
 class Sidebar(GraphicsComponent):
     def __init__(self, dims: Point):
-        self.box = Box(0, 0, *dims)
         self.surface = pg.Surface(dims)
 
-        # subbox = [self.box.x, self.box.y, self.box.width, self.box.height]
-        self.surfaces: list[GraphicsComponent] = []
-        surface_types: list[Type[GraphicsComponent]] = [
-            Scoreboard,
-            ResourceQueueUI,
-            SchematicBook,
+        self.surfaces: list[GraphicsComponent] = [
+            Scoreboard(Point(dims.x, 50)),
+            ResourceQueueUI(Point(dims.x, 50)),
+            SchematicBook(Point(dims.x, 500)),
         ]
-        for surface in surface_types:
-            self.surfaces.append(surface(Point(self.box.width, self.box.height)))  # type: ignore[call-arg]
-            # subbox[1] += self.surfaces[-1].box.height
 
     def render(self, *args, **kwargs) -> pg.Surface:
-        vertical_cursor = 0
         self.surface.fill((255, 0, 0))
+        vertical_cursor = 0
         for surface in self.surfaces:
-            bbox = Box(self.box.x, self.box.y + vertical_cursor, self.box.width, self.box.height)
             rendered = surface.render()
-            relative_box = Box(*(bbox.top_left - self.box.top_left), *self.box.dims)
-            self.surface.blit(rendered, relative_box)
+            self.surface.blit(rendered, (0, vertical_cursor))
             vertical_cursor += rendered.get_size()[1]
         return self.surface
 
