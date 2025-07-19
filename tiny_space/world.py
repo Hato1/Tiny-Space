@@ -4,14 +4,14 @@
 
 from __future__ import annotations
 
-import itertools
 import logging
 from enum import Enum
 from typing import Type
 
 import pygame as pg
 
-from .buildings import Base, Building
+from . import buildings
+from .buildings import Building
 from .cursor import CursorStates, cursor
 from .grid import Grid
 from .helpers import ORTHOGONAL, Box, Event, GridPoint, Notifier, Point
@@ -47,12 +47,6 @@ class WorldGraphicsComponent(GraphicsComponent):
         ]
         self.frame_count = 0
 
-    def center_box(self, box):
-        """Set self.box position to be in the center of box."""
-        assert self.surface.get_width() < box.width, "Grid too wide for display area!"
-        assert self.surface.get_height() < box.height, "Grid too tall for display area!"
-        # self.box = Box(*self.surface.get_rect(center=box.center))
-
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Convert pixel coordinate to grid coordinate."""
         return GridPoint(int(point.x // self.cell_size), int(point.y // self.cell_size))
@@ -87,16 +81,12 @@ class WorldGraphicsComponent(GraphicsComponent):
 
         TODO: Merge this with draw_grid_surface and hold cursor state in Cursor?
         """
-        # if not cursor_location:
-        #     return
         for pos, tile in shape:
             if tile is Nothing:
                 continue
             location = cursor_location + pos
             if not grid.is_in_grid(location):
                 continue
-            # if grid[location[0], location[1]].contains is Nothing:
-            #     continue
             self.draw_box(self.grid_to_pixels(location), color=color, width=width)
 
     def draw_build_hammers(self):
@@ -174,19 +164,13 @@ def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
     )
 
 
-# class WorldInputComponent(SurfaceInputComponent):
-#     pass
-
-
 class World(GraphicsComponent):
     default_grid_size = GridPoint(5, 7)
 
     def __init__(self, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
         self.grid = Grid.from_dimensions(grid_size)
-        center = GridPoint(self.grid.size.x // 2, self.grid.size.y // 2)
-        self.grid[center] = Base
+        self.grid[self.grid.size // 2] = buildings.Base
         self.graphics = WorldGraphicsComponent(grid_size, cell_size)
-        # self.input = WorldInputComponent()
 
     @property
     def surface(self):
@@ -252,11 +236,9 @@ class World(GraphicsComponent):
         assert schematic
         offset = cursor.get_building_location()
         assert offset
-        # TODO: Iterate through grid directly instead of using itertools.
-        for row, column in itertools.product(range(schematic.size.y), range(schematic.size.x)):
-            if schematic[column, row] is not Nothing:
-                gridpoint = GridPoint(column + offset.x, row + offset.y)
-                self.grid[gridpoint] = Nothing
+        for pos, item in schematic:
+            if item is not Nothing:
+                self.grid[pos + offset] = Nothing
 
     def confirm_building(self, location: GridPoint):
         schematic = cursor.get_shadow_shape()
