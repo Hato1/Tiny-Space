@@ -96,13 +96,49 @@ class SchematicBook(GraphicsComponent):
         pass
 
 
-class ScrollBar(GraphicsComponent):
-    def __init__(self, dims: Point):
+class SchematicEntry(GraphicsComponent):
+    font_size = 24
+
+    def __init__(self, dims: Point, building: type[Building]):
         self.surface = pg.Surface(dims)
-        self.surface.fill((0, 255, 0))
+        self.building = building
+        self.font = pg.font.SysFont(None, self.font_size)
 
     def render(self, *args, **kwargs):
-        self.surface.fill((255, 0, 0))
+        self.surface.fill((50, 50, 50))
+
+        # Draw building name.
+        title = self.font.render(f"{self.building.get_name()}", True, pg.Color("black"))
+        rect = title.get_rect(midtop=self.surface.get_rect().midtop)
+        self.surface.blit(title, rect)
+
+        # Draw building schematic.
+        schematic_renderer = WorldGraphicsComponent(self.building.get_schematic().size, 25)
+        schematic_renderer.draw_cursor = lambda grid, mouse_pos: None  # type: ignore[method-assign]
+        schematic_renderer.draw_build_hammers = lambda: True  # type: ignore[method-assign]
+        surf = schematic_renderer.render(
+            self.building.get_schematic(), mouse_pos=Point(-1, -1), ignore_empty=True, background_color=Color.DARK_GREY
+        )
+        rect = surf.get_rect(center=self.surface.get_rect().center)
+        self.surface.blit(surf, rect)
+
+        # Draw building icon.
+        rect = self.building.image().get_rect(midleft=(5, rect.centery))
+        self.surface.blit(self.building.image(), rect)
+        return self.surface
+
+
+class SchematicBook2(GraphicsComponent):
+    def __init__(self, dims: Point):
+        self.surface = pg.Surface(dims)
+        self.constructable_buildings = [b for b in Building.BUILDING_REGISTRY if b.is_buildable()]
+        self.building_entries = {
+            b: SchematicEntry(Point(dims.x, dims.y // 3), b) for b in Building.BUILDING_REGISTRY if b.is_buildable()
+        }
+
+    def render(self, *args, **kwargs):
+        for i, schematic_entry in enumerate(self.building_entries.values()):
+            self.surface.blit(schematic_entry.render(), (0, self.surface.height * (i / 3)))
         return self.surface
 
     def process_inputs(self, mouse_position: Point):
@@ -121,7 +157,7 @@ class Sidebar(GraphicsComponent):
             Scoreboard(Point(dims.x, scoreboard_height)),
             ResourceQueueUI(Point(dims.x, resource_queue_height)),
             # SchematicBook(Point(dims.x, 500)),
-            ScrollBar(Point(dims.x, schematic_book_height)),
+            SchematicBook2(Point(dims.x, schematic_book_height)),
         ]
 
     def render(self, *args, **kwargs) -> pg.Surface:
