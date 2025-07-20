@@ -91,38 +91,38 @@ class Game:
         for event in pg.event.get():
             self.process_input(event)
 
-    def update(self):
+    def update(self, time_delta):
         """Update the game. Runs every frame."""
         for _pos, surface in self.surfaces:
-            surface.update()
+            surface.update(time_delta)
 
     def render(self):
         """Draw all the surfaces to the display."""
         mouse_pos = Point(*pg.mouse.get_pos())
         self._screen.fill((0, 0, 0))
         for pos, surface in self.surfaces:
-            rect = pg.Rect(*pos, *surface.surface.get_rect().size)
+            rect = pg.Rect(*pos, *surface.surface.size)
             assert rect in self._screen.get_rect(), f"{rect} does not fit in display!"
             if surface == self.world:
                 # Draw a nice border. Bordered surfaces should ideally be less hacky...
-                width, height = surface.surface.get_rect().size
+                width, height = surface.surface.size
                 pg.draw.rect(self._screen, (30, 30, 200), (pos[0] - 1, pos[1] - 1, width + 2, height + 2))
             self._screen.blit(surface.render(mouse_pos - pos), pos)
         pg.display.update()
 
     def main_loop(self):
         while True:
+            # Limit FPS to 60
+            time_delta = self.clock.tick(60) / 1000.0
             if self.state == State.RUNNING:
                 self.process_inputs()
-                self.update()
+                self.update(time_delta)
                 self.render()
             elif self.state is State.RESTARTING:
                 self.reset()
             elif self.state is State.QUITTING:
                 logging.info("Quitting.")
                 return
-            # Limit FPS to 60
-            self.clock.tick(60)
 
 
 if __name__ == "__main__":

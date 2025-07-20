@@ -176,9 +176,6 @@ class World(GraphicsComponent):
     def surface(self):
         return self.graphics.surface
 
-    def update(self):
-        pass
-
     def process_inputs(self, mouse_position: Point):
         moused_tile = self.graphics.pixels_to_grid(mouse_position)
         match cursor.get_state():

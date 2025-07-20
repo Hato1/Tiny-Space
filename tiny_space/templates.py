@@ -36,8 +36,8 @@ class GraphicsComponent(ABC):
     def render(self, *args, **kwargs) -> pg.Surface:
         raise NotImplementedError
 
-    def update(self) -> None:  # noqa: B027
-        """Update game for 1 frame."""
+    def update(self, time_delta: float) -> None:  # noqa: B027
+        """Update game."""
         pass
 
     def process_inputs(self, mouse_position: Point):  # noqa: B027

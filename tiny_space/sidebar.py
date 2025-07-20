@@ -59,9 +59,6 @@ class ResourceQueueUI(GraphicsComponent, Observer):
             self.surface.blit(resource.image(), (10 + offset + (self.distance_between_resources * i), 10))
         return self.surface
 
-    def update(self):
-        pass
-
     def process_inputs(self, mouse_position: Point):
         pass
 
@@ -99,14 +96,32 @@ class SchematicBook(GraphicsComponent):
         pass
 
 
+class ScrollBar(GraphicsComponent):
+    def __init__(self, dims: Point):
+        self.surface = pg.Surface(dims)
+        self.surface.fill((0, 255, 0))
+
+    def render(self, *args, **kwargs):
+        self.surface.fill((255, 0, 0))
+        return self.surface
+
+    def process_inputs(self, mouse_position: Point):
+        pass
+
+
 class Sidebar(GraphicsComponent):
     def __init__(self, dims: Point):
         self.surface = pg.Surface(dims)
 
+        scoreboard_height = 50
+        resource_queue_height = 50
+        schematic_book_height = self.surface.height - scoreboard_height - resource_queue_height
+
         self.surfaces: list[GraphicsComponent] = [
-            Scoreboard(Point(dims.x, 50)),
-            ResourceQueueUI(Point(dims.x, 50)),
-            SchematicBook(Point(dims.x, 500)),
+            Scoreboard(Point(dims.x, scoreboard_height)),
+            ResourceQueueUI(Point(dims.x, resource_queue_height)),
+            # SchematicBook(Point(dims.x, 500)),
+            ScrollBar(Point(dims.x, schematic_book_height)),
         ]
 
     def render(self, *args, **kwargs) -> pg.Surface:
@@ -120,3 +135,7 @@ class Sidebar(GraphicsComponent):
 
     def process_inputs(self, mouse_position: Point):
         pass
+
+    def update(self, time_delta):
+        for surf in self.surfaces:
+            surf.update(time_delta)
