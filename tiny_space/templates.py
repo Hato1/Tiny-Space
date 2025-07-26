@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, TypeVar, cast
 
@@ -41,4 +42,11 @@ class GraphicsComponent(ABC):
         pass
 
     def process_inputs(self, mouse_position: Point):  # noqa: B027
-        raise NotImplementedError
+        logging.warning("Mouse click not implemented for this grapihc component.")
+
+    @staticmethod
+    def process_inputs_subsurfaces(mouse_position: Point, surfaces: list[tuple[Point, GraphicsComponent]]):
+        for pos, surface in surfaces:
+            relative_position = mouse_position - pos
+            if surface.surface.get_rect().collidepoint(relative_position):
+                surface.process_inputs(mouse_position=relative_position)

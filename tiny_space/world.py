@@ -35,7 +35,7 @@ class Color(tuple, Enum):
 class WorldGraphicsComponent(GraphicsComponent):
     """Handles the world surface and drawing to it."""
 
-    def __init__(self, grid_size: GridPoint, cell_size: int):
+    def __init__(self, grid_size: GridPoint, cell_size: int, schematic: bool = False):
         self.cell_size = cell_size
         self.surface = pg.Surface(grid_size * cell_size)
         self.hammer_assets = [
@@ -46,6 +46,8 @@ class WorldGraphicsComponent(GraphicsComponent):
             pg.image.load("assets/hammer/hammer5.png"),
         ]
         self.frame_count = 0
+        # Setting to disable interactivity for schematic book sidebar display.
+        self.schematic = schematic
 
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Convert pixel coordinate to grid coordinate."""
@@ -145,14 +147,14 @@ class WorldGraphicsComponent(GraphicsComponent):
         for point, tile in grid:
             self.draw_tile(tile, point)
 
-    def render(
-        self, grid: Grid, mouse_pos: Point, ignore_empty: bool = False, background_color=Color.BLUE
-    ) -> pg.Surface:
+    def render(self, grid: Grid, mouse_pos: Point = Point(-1, -1), background_color=Color.BLUE) -> pg.Surface:
         self.surface.fill(background_color)
-        self.draw_grid_surface(grid, ignore_empty)
-        self.draw_cursor(grid, mouse_pos)
+        self.draw_grid_surface(grid, skip_nothing=self.schematic)
+        if not self.schematic:
+            self.draw_cursor(grid, mouse_pos)
         self.draw_tiles(grid)
-        self.draw_build_hammers()
+        if not self.schematic:
+            self.draw_build_hammers()
         self.frame_count += 1
         return self.surface
 

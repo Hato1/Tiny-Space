@@ -67,3 +67,28 @@ class CommsTower(Building):
 class ArsenicScrubber(Building):
     schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
     _schematic = grid_from_transposed(schematic_list)
+
+
+class Lorem(Building):
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Ipsum(Building):
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Dolor(Building):
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Sit(Building):
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Amet(Building):
+    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    _schematic = grid_from_transposed(schematic_list)

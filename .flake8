@@ -7,6 +7,8 @@ extend-exclude =
     .pytest_cache
     .venv
     dist
+extend-immutable-calls =
+    Point
 select =
     # TODO: enable complexity checks
     # mccabe
