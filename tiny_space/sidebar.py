@@ -9,6 +9,7 @@ import pygame as pg
 
 from . import resources
 from .buildings import Building
+from .cursor import CursorStates, cursor
 from .helpers import Event, Observer, Point
 from .score import score
 from .templates import GraphicsComponent
@@ -65,8 +66,9 @@ class SchematicEntry(GraphicsComponent):
         self.surface = pg.Surface(dims)
         self.building = building
         self.font = pg.font.Font(self.font_file, size=self.font_size)
+        self.build_button_rect = pg.Rect()
 
-    def render(self, **kwargs):
+    def render(self, *, mouse_position: Point, **kwargs):
         self.surface.fill(Color.DARK_GREY)
         gap_between_elements = 5
 
@@ -98,7 +100,9 @@ class SchematicEntry(GraphicsComponent):
         build_rect = pg.Rect()
         build_rect.size = (sr.width * 6 // 10, sr.height // 10)
         build_rect.midbottom = (sr.centerx, sr.bottom - gap_between_elements)
-        pg.draw.rect(self.surface, (255, 92, 0), build_rect, border_radius=10)
+        self.build_button_rect = build_rect
+        color = (255, 122, 30) if build_rect.collidepoint(mouse_position) else (255, 92, 0)
+        pg.draw.rect(self.surface, color, build_rect, border_radius=10)
         pg.draw.rect(self.surface, (128, 46, 0), build_rect, width=3, border_radius=10)
         build_text = self.font.render("Build", True, pg.Color("black"))
         build_text_rect = build_text.get_rect(center=build_rect.center)
@@ -112,6 +116,10 @@ class SchematicEntry(GraphicsComponent):
         self.surface.blit(surf, rect)
 
         return self.surface
+
+    def process_inputs(self, mouse_position: Point):
+        if self.build_button_rect.collidepoint(mouse_position):
+            cursor.set_state(CursorStates.BUILD_OUTLINE, building=self.building)
 
 
 class SchematicBook(GraphicsComponent):
@@ -165,7 +173,7 @@ class SchematicBook(GraphicsComponent):
         self.render_button_bar(mouse_position)
 
         building = self.get_moused_building(mouse_position) or self.selected_building
-        surf = self.building_entries[building].render()
+        surf = self.building_entries[building].render(mouse_position=mouse_position - Point(0, self.button_bar_height))
         self.surface.blit(surf, (0, self.button_bar_height))
         return self.surface
 
@@ -182,6 +190,9 @@ class SchematicBook(GraphicsComponent):
     def process_inputs(self, mouse_position: Point):
         if moused_building := self.get_moused_building(mouse_position):
             self.selected_building = moused_building
+        self.building_entries[self.selected_building].process_inputs(
+            mouse_position=mouse_position - Point(0, self.button_bar_height)
+        )
 
 
 class Sidebar(GraphicsComponent):
@@ -200,11 +211,9 @@ class Sidebar(GraphicsComponent):
 
     def render(self, mouse_position: Point, *args, **kwargs) -> pg.Surface:
         self.surface.fill((255, 0, 0))
-        vertical_cursor = 0
         for _pos, surface in self.surfaces:
             rendered = surface.render(mouse_position=mouse_position - _pos)
-            self.surface.blit(rendered, (0, vertical_cursor))
-            vertical_cursor += rendered.get_size()[1]
+            self.surface.blit(rendered, _pos)
         return self.surface
 
     def process_inputs(self, mouse_position: Point):
