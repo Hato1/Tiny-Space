@@ -80,15 +80,15 @@ class Ipsum(Building):
 
 
 class Dolor(Building):
-    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    schematic_list: list[list[Tile]] = [[Crystal], [Iron]]
     _schematic = grid_from_transposed(schematic_list)
 
 
 class Sit(Building):
-    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    schematic_list: list[list[Tile]] = [[Aerofoam, Oil]]
     _schematic = grid_from_transposed(schematic_list)
 
 
 class Amet(Building):
-    schematic_list: list[list[Tile]] = [[Nothing, Crystal], [Nothing, Oil], [Aerofoam, Iron]]
+    schematic_list: list[list[Tile]] = [[Oil]]
     _schematic = grid_from_transposed(schematic_list)

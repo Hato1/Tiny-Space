@@ -41,7 +41,7 @@ class Game:
         horizontal_split = int(self._screen.width * 0.7)
         sidebar_width = self._screen.width - horizontal_split
 
-        self.world = World()
+        self.world = World(Point(horizontal_split, self._screen.height))
         assert self.world.surface.get_width() < horizontal_split, "Grid too wide for display area!"
         assert self.world.surface.get_height() < self._screen.height, "Grid too tall for display area!"
         world_pos = self.world.surface.get_rect(center=(horizontal_split // 2, self._screen.height // 2)).topleft

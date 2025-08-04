@@ -10,6 +10,8 @@ from typing import Type
 
 import pygame as pg
 
+import config
+
 from . import buildings
 from .buildings import Building
 from .cursor import CursorStates, cursor
@@ -35,9 +37,13 @@ class Color(tuple, Enum):
 class WorldGraphicsComponent(GraphicsComponent):
     """Handles the world surface and drawing to it."""
 
-    def __init__(self, grid_size: GridPoint, cell_size: int, schematic: bool = False):
-        self.cell_size = cell_size
-        self.surface = pg.Surface(grid_size * cell_size)
+    def __init__(self, size: Point | int, grid_size: GridPoint, schematic: bool = False):
+        """Size[Point] is the dimensions of the surface. Size[int] is the size of each grid tile."""
+        if isinstance(size, int):
+            self.cell_size = size
+        else:
+            self.cell_size = self.calculate_cell_size(size, grid_size)
+        self.surface = pg.Surface(grid_size * self.cell_size)
         self.hammer_assets = [
             pg.image.load("assets/hammer/hammer1.png"),
             pg.image.load("assets/hammer/hammer2.png"),
@@ -46,8 +52,13 @@ class WorldGraphicsComponent(GraphicsComponent):
             pg.image.load("assets/hammer/hammer5.png"),
         ]
         self.frame_count = 0
-        # Setting to disable interactivity for schematic book sidebar display.
+        # Schematic mode: disable interactivity for schematic book sidebar display.
         self.schematic = schematic
+
+    @staticmethod
+    def calculate_cell_size(size: Point, grid_size: GridPoint) -> int:
+        max_grid_size_px = size * 9 // 10
+        return min(max_grid_size_px.x // grid_size.x, max_grid_size_px.y // grid_size.y)
 
     def pixels_to_grid(self, point: Point) -> GridPoint:
         """Convert pixel coordinate to grid coordinate."""
@@ -57,13 +68,14 @@ class WorldGraphicsComponent(GraphicsComponent):
         """Convert grid coordinate to pixel coordinate"""
         return Point(grid_point.x * self.cell_size, grid_point.y * self.cell_size)
 
-    def draw_line(self, start: Point, end: Point, color=Color.BLUE, line_width=2):
-        pg.draw.line(self.surface, color, start, end, line_width)
+    # def draw_line(self, start: Point, end: Point, color=Color.BLUE, line_width=2):
+    #     line_width = line_width * config.SCALE
+    #     pg.draw.line(self.surface, color, start, end, line_width)
 
     def draw_box(self, start: Point, size: Point | None = None, color=Color.BLUE, width=1):
         # If width is 0 then the box will be filled.
         size = size or Point(self.cell_size, self.cell_size)
-        pg.draw.rect(self.surface, color, (*start, *size), width=width)
+        pg.draw.rect(self.surface, color, (*start, *size), width=width * config.SCALE)
 
     def draw_grid_surface(self, grid: Grid, skip_nothing: bool = False):
         """Draw tile outlines. Use ignore_empty to draw outlines of full tiles."""
@@ -100,9 +112,10 @@ class WorldGraphicsComponent(GraphicsComponent):
                 if tile is Nothing:
                     continue
                 location = shadow_location + pos
-                size = Point(*self.hammer_assets[0].get_size())
+                scaled = pg.transform.scale_by(self.hammer_assets[(self.frame_count // 6) % 5], config.SCALE)
+                size = Point(*scaled.get_size())
                 self.surface.blit(
-                    self.hammer_assets[(self.frame_count // 6) % 5],
+                    scaled,
                     (
                         (location.x + 0.5) * self.cell_size - size.x // 2,
                         (location.y + 0.5) * self.cell_size - size.y // 2,
@@ -128,12 +141,11 @@ class WorldGraphicsComponent(GraphicsComponent):
                     cursor_color = Color.RED
             elif cursor.get_state() == CursorStates.BUILD_LOCATION:
                 cursor_color = Color.GREY
-                # width=5
             self._draw_cursor(grid, moused_tile, cursor.get_shape(), cursor_color)
 
     def draw_tile(self, thing: Type[Thing] | Type[Nothing], grid_coord: GridPoint):
         if image := thing.image():
-            scaled = pg.transform.scale(image, (self.cell_size // 1.5, self.cell_size // 1.5))
+            scaled = pg.transform.scale_by(image, config.SCALE)
             asset_size = Point(*scaled.get_size())
             self.surface.blit(
                 scaled,
@@ -169,10 +181,10 @@ def validate_schematic(schematic: Grid, subgrid: Grid) -> bool:
 class World(GraphicsComponent):
     default_grid_size = GridPoint(5, 7)
 
-    def __init__(self, grid_size: GridPoint = default_grid_size, cell_size: int = 50):
+    def __init__(self, size: Point, grid_size: GridPoint = default_grid_size):
         self.grid = Grid.from_dimensions(grid_size)
         self.grid[self.grid.size // 2] = buildings.Base
-        self.graphics = WorldGraphicsComponent(grid_size, cell_size)
+        self.graphics = WorldGraphicsComponent(size, grid_size)
 
     @property
     def surface(self):

@@ -7,6 +7,8 @@ from typing import Type
 
 import pygame as pg
 
+import config
+
 from . import resources
 from .buildings import Building
 from .cursor import CursorStates, cursor
@@ -22,14 +24,14 @@ class Scoreboard(GraphicsComponent):
 
     def render(self, **kwargs) -> pg.Surface:
         self.surface.fill(pg.Color("yellow"))
-        font = pg.font.SysFont(None, 24)
+        font = pg.font.SysFont(None, 24 * config.SCALE)
         img = font.render(f"Score: {score.score}", True, pg.Color("black"))
-        self.surface.blit(img, (20, 20))
+        self.surface.blit(img, (20 * config.SCALE, 20 * config.SCALE))
         return self.surface
 
 
 class ResourceQueueUI(GraphicsComponent, Observer):
-    distance_between_resources = 40
+    distance_between_resources = 40 * config.SCALE
     resources_to_render = 5
     animation_duration = 250
 
@@ -47,19 +49,23 @@ class ResourceQueueUI(GraphicsComponent, Observer):
         self.surface.fill(pg.Color("white"))
         resources_to_display = resources.Queue.peek_n(self.resources_to_render)
         time_delta = pg.time.get_ticks() - self.last_resource_placed_time
-        offset = 0
+        animation_offset = 0
 
         if time_delta < self.animation_duration:
             resources_to_display.insert(0, resources.Queue.last_resource_taken)
-            offset = int(-self.distance_between_resources * (time_delta / self.animation_duration))
+            animation_offset = int(-self.distance_between_resources * (time_delta / self.animation_duration))
 
         for i, resource in enumerate(resources_to_display):
-            self.surface.blit(resource.image(), (10 + offset + (self.distance_between_resources * i), 10))
+            resource_surf = pg.transform.scale_by(resource.image(), config.SCALE)
+            x = 10 + animation_offset + (self.distance_between_resources * i)
+            # Center Y
+            y = resource_surf.get_rect(center=self.surface.get_rect().center).top
+            self.surface.blit(resource_surf, (x, y))
         return self.surface
 
 
 class SchematicEntry(GraphicsComponent):
-    font_size = 18
+    font_size = 18 * config.SCALE
     font_file = "assets/Orbitron-Regular.ttf"
 
     def __init__(self, dims: Point, building: type[Building]):
@@ -70,7 +76,7 @@ class SchematicEntry(GraphicsComponent):
 
     def render(self, *, mouse_position: Point, **kwargs):
         self.surface.fill(Color.DARK_GREY)
-        gap_between_elements = 5
+        gap_between_elements = 5 * config.SCALE
 
         sr = self.surface.get_rect()
 
@@ -84,32 +90,37 @@ class SchematicEntry(GraphicsComponent):
         description_rect = pg.Rect()
         description_rect.size = (sr.width * 9 // 10, sr.height // 4)
         description_rect.midtop = (sr.centerx, name_rect.bottom + gap_between_elements)
-        pg.draw.rect(self.surface, (100, 100, 100), description_rect, border_radius=10)
-        pg.draw.rect(self.surface, (20, 20, 20), description_rect, width=3, border_radius=10)
+        pg.draw.rect(self.surface, (100, 100, 100), description_rect, border_radius=10 * config.SCALE)
+        pg.draw.rect(
+            self.surface, (20, 20, 20), description_rect, width=3 * config.SCALE, border_radius=10 * config.SCALE
+        )
 
         # Draw building icon.
-        rect = self.building.image().get_rect(
-            midleft=(description_rect.left + gap_between_elements, description_rect.centery)
-        )
-        self.surface.blit(self.building.image(), rect)
+        building_surf = pg.transform.scale_by(self.building.image(), config.SCALE)
+        rect = building_surf.get_rect(midleft=(description_rect.left + gap_between_elements, description_rect.centery))
+        self.surface.blit(building_surf, rect)
 
         # Draw building effect.
         # TODO
 
         # Draw build button.
         build_rect = pg.Rect()
+        default_color = (255, 92, 0)
+        mouseover_color = (255, 122, 30)
+        border_color = (128, 46, 0)
         build_rect.size = (sr.width * 6 // 10, sr.height // 10)
         build_rect.midbottom = (sr.centerx, sr.bottom - gap_between_elements)
         self.build_button_rect = build_rect
-        color = (255, 122, 30) if build_rect.collidepoint(mouse_position) else (255, 92, 0)
-        pg.draw.rect(self.surface, color, build_rect, border_radius=10)
-        pg.draw.rect(self.surface, (128, 46, 0), build_rect, width=3, border_radius=10)
+        color = mouseover_color if build_rect.collidepoint(mouse_position) else default_color
+        pg.draw.rect(self.surface, color, build_rect, border_radius=10 * config.SCALE)
+        pg.draw.rect(self.surface, border_color, build_rect, width=3 * config.SCALE, border_radius=10 * config.SCALE)
         build_text = self.font.render("Build", True, pg.Color("black"))
         build_text_rect = build_text.get_rect(center=build_rect.center)
         self.surface.blit(build_text, build_text_rect)
 
         # Draw building schematic.
-        schematic_renderer = WorldGraphicsComponent(self.building.get_schematic().size, 35, schematic=True)
+        space_to_fill = Point(sr.width, build_rect.top - description_rect.bottom)
+        schematic_renderer = WorldGraphicsComponent(space_to_fill, self.building.get_schematic().size, schematic=True)
         surf = schematic_renderer.render(self.building.get_schematic(), background_color=Color.DARK_GREY)
         y = description_rect.bottom + ((build_rect.top - description_rect.bottom) // 2)
         rect = surf.get_rect(center=(sr.centerx, y))
@@ -123,13 +134,13 @@ class SchematicEntry(GraphicsComponent):
 
 
 class SchematicBook(GraphicsComponent):
-    font_size = 12
+    font_size = 12 * config.SCALE
     font_file = "assets/Orbitron-Regular.ttf"
 
     # Button grid
     entries_per_row = 6
-    button_height = 20
-    button_bar_height = 20 * 2
+    button_height = 20 * config.SCALE
+    button_bar_height = 20 * 2 * config.SCALE
 
     def __init__(self, dims: Point):
         self.surface = pg.Surface(dims)
@@ -146,8 +157,8 @@ class SchematicBook(GraphicsComponent):
         border_color = (30, 30, 200)
 
         if color:
-            pg.draw.rect(self.surface, color, rect, border_radius=5)
-        pg.draw.rect(self.surface, border_color, rect, width=2, border_radius=5)
+            pg.draw.rect(self.surface, color, rect, border_radius=5 * config.SCALE)
+        pg.draw.rect(self.surface, border_color, rect, width=2 * config.SCALE, border_radius=5 * config.SCALE)
 
         # Number
         number = self.font.render(text, True, pg.Color("white"))
