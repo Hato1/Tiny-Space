@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from tiny_space.main import Game  # noqa: I900
+from tiny_space.game import Game  # noqa: I900
 
 
 class CustomFormatter(logging.Formatter):
@@ -29,14 +29,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-# TODO: Set this in command line argument
 # If you want to be spammed less choose a different logging level:
-# DEBUG
-# INFO
-# WARNING
-# ERROR
-# CRITICAL
-
 LEVELS = {
     "DEBUG": 10,
     "INFO": 20,
@@ -45,17 +38,18 @@ LEVELS = {
     "CRITICAL": 50,
 }
 
-args = sys.argv
+
 try:
     arg = sys.argv[1]
-    if LOG_LEVEL := LEVELS.get(arg):
-        pass
-    else:
-        LOG_LEVEL = int(sys.argv[1])
+    # Check for english log level (INFO, ERROR, etc).
+    if not (LOG_LEVEL := LEVELS.get(arg.upper())):
+        # Otherwise, assume int.
+        LOG_LEVEL = int(arg)
 except (IndexError, ValueError):
+    # Default to INFO.
     LOG_LEVEL = 20
 
-# Setting root logger is bad practise, but that doesn't stop me!
+# Setting root logger is bad practice, too bad!
 logger = logging.root
 logger.setLevel(LOG_LEVEL)
 

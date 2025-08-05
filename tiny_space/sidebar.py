@@ -169,9 +169,9 @@ class SchematicBook(GraphicsComponent):
 
     def render_button_bar(self, mouse_position: Point):
         for i, building in enumerate(self.building_entries.keys()):
-            x = (i % self.entries_per_row) * self.surface.width / self.entries_per_row
+            x = (i % self.entries_per_row) * self.surface.get_width() / self.entries_per_row
             y = (i // self.entries_per_row) * self.button_height
-            rect = pg.Rect(x, y, self.surface.width / self.entries_per_row, self.button_height)
+            rect = pg.Rect(x, y, self.surface.get_width() / self.entries_per_row, self.button_height)
             color = None
             if building is self.selected_building:
                 color = (83, 109, 254)
@@ -193,7 +193,7 @@ class SchematicBook(GraphicsComponent):
     def get_moused_building(self, mouse_position: Point) -> type[Building] | None:
         """Get the building for the button-grid button at coordinate."""
         if self.surface.get_rect().collidepoint(mouse_position):
-            x = mouse_position.x // (self.surface.width // self.entries_per_row)
+            x = mouse_position.x // (self.surface.get_width() // self.entries_per_row)
             y = mouse_position.y // self.button_height
             index = y * 6 + x
             if index < len(self.building_entries):
@@ -214,7 +214,7 @@ class Sidebar(GraphicsComponent):
 
         scoreboard_height = dims.y // 8
         resource_queue_height = dims.y // 8
-        schematic_book_height = self.surface.height - scoreboard_height - resource_queue_height
+        schematic_book_height = self.surface.get_height() - scoreboard_height - resource_queue_height
 
         self.surfaces: list[tuple[Point, GraphicsComponent]] = [
             (Point(0, 0), Scoreboard(Point(dims.x, scoreboard_height))),

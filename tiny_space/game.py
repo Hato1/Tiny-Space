@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import sys
 from enum import Enum
 
 import pygame as pg
@@ -31,22 +32,24 @@ class Game:
 
         pg.init()
         pg.display.set_caption("Tiny Space")
-        self._screen = pg.display.set_mode(config.RESOLUTION, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
+        # Pygbag doesn't support many modes.
+        options = pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE if sys.platform != "emscripten" else 0
+        self._screen = pg.display.set_mode(config.RESOLUTION, options)
         self.clock = pg.time.Clock()
         asyncio.run(self.main())
 
     def reset(self):
         """Reset the game and start it again."""
         # The Sidebar occupies the right 30% of the display.
-        horizontal_split = int(self._screen.width * 0.7)
-        sidebar_width = self._screen.width - horizontal_split
+        horizontal_split = int(self._screen.get_width() * 0.7)
+        sidebar_width = self._screen.get_width() - horizontal_split
 
-        self.world = World(Point(horizontal_split, self._screen.height))
+        self.world = World(Point(horizontal_split, self._screen.get_height()))
         assert self.world.surface.get_width() < horizontal_split, "Grid too wide for display area!"
-        assert self.world.surface.get_height() < self._screen.height, "Grid too tall for display area!"
-        world_pos = self.world.surface.get_rect(center=(horizontal_split // 2, self._screen.height // 2)).topleft
+        assert self.world.surface.get_height() < self._screen.get_height(), "Grid too tall for display area!"
+        world_pos = self.world.surface.get_rect(center=(horizontal_split // 2, self._screen.get_height() // 2)).topleft
 
-        self.sidebar = Sidebar(Point(sidebar_width, self._screen.height))
+        self.sidebar = Sidebar(Point(sidebar_width, self._screen.get_height()))
 
         self.surfaces = [
             (Point(*world_pos), self.world),
@@ -101,11 +104,11 @@ class Game:
         mouse_pos = Point(*pg.mouse.get_pos())
         self._screen.fill((0, 0, 0))
         for pos, surface in self.surfaces:
-            rect = pg.Rect(*pos, *surface.surface.size)
+            rect = pg.Rect(*pos, *surface.surface.get_size())
             assert rect in self._screen.get_rect(), f"{rect} does not fit in display!"
             if surface == self.world:
                 # Draw a nice border. Bordered surfaces should ideally be less hacky...
-                width, height = surface.surface.size
+                width, height = surface.surface.get_size()
                 pg.draw.rect(self._screen, (30, 30, 200), (pos[0] - 1, pos[1] - 1, width + 2, height + 2))
             self._screen.blit(surface.render(mouse_pos - pos), pos)
         pg.display.update()

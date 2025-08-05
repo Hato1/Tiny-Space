@@ -502,6 +502,21 @@ files = [
 ]
 
 [[package]]
+name = "pygbag"
+version = "0.9.2"
+description = "package and run python/pygame-ce wasm (and more) directly in modern web browsers."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "pygbag-0.9.2-py3-none-any.whl", hash = "sha256:3a60a80cc28ed21e3d5d98c08a5d8f857911e38e411b6e590ba640158e8656c1"},
+    {file = "pygbag-0.9.2.tar.gz", hash = "sha256:0e31860742a8ba9c527135cbb6d64f6d7d8d7b23b71ee87a15f1de9474690c25"},
+]
+
+[package.extras]
+sim = ["aioconsole", "aiohttp", "asyncio-socks-server"]
+
+[[package]]
 name = "pylint"
 version = "3.1.0"
 description = "python code static checker"
@@ -701,4 +716,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13"
-content-hash = "3b95d057b537be084d2e3e9a0f7b4b7f04d297945693281aef86105d1d3ff88f"
+content-hash = "1b55ed99c56ecee1853dda86f9a333535a9ba9ae57cef5a33cc720a7babaeecf"
