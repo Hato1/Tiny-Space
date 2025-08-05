@@ -3,6 +3,7 @@
 The sidebar contains the players score, resource queue, and the schematic library.
 """
 
+import importlib.resources
 from typing import Type
 
 import pygame as pg
@@ -15,6 +16,8 @@ from tiny_space.helpers import Event, Observer, Point
 from tiny_space.score import score
 from tiny_space.templates import GraphicsComponent
 from tiny_space.world import Color, WorldGraphicsComponent
+
+ROOT_ASSET_DIR = str(importlib.resources.files(__package__))
 
 
 class Scoreboard(GraphicsComponent):
@@ -65,7 +68,7 @@ class ResourceQueueUI(GraphicsComponent, Observer):
 
 class SchematicEntry(GraphicsComponent):
     font_size = 18 * config.SCALE
-    font_file = "assets/Orbitron-Regular.ttf"
+    font_file = ROOT_ASSET_DIR + "/assets/Orbitron-Regular.ttf"
 
     def __init__(self, dims: Point, building: type[Building]):
         self.surface = pg.Surface(dims)
@@ -134,7 +137,7 @@ class SchematicEntry(GraphicsComponent):
 
 class SchematicBook(GraphicsComponent):
     font_size = 12 * config.SCALE
-    font_file = "assets/Orbitron-Regular.ttf"
+    font_file = ROOT_ASSET_DIR + "/assets/Orbitron-Regular.ttf"
 
     # Button grid
     entries_per_row = 6

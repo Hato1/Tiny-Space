@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import importlib.resources
 import logging
 from enum import Enum
 from typing import Type
@@ -43,12 +44,14 @@ class WorldGraphicsComponent(GraphicsComponent):
         else:
             self.cell_size = self.calculate_cell_size(size, grid_size)
         self.surface = pg.Surface(grid_size * self.cell_size)
+
+        root_asset_dir = str(importlib.resources.files(__package__))
         self.hammer_assets = [
-            pg.image.load("assets/hammer/hammer1.png"),
-            pg.image.load("assets/hammer/hammer2.png"),
-            pg.image.load("assets/hammer/hammer3.png"),
-            pg.image.load("assets/hammer/hammer4.png"),
-            pg.image.load("assets/hammer/hammer5.png"),
+            pg.image.load(root_asset_dir + "/assets/hammer/hammer1.png"),
+            pg.image.load(root_asset_dir + "/assets/hammer/hammer2.png"),
+            pg.image.load(root_asset_dir + "/assets/hammer/hammer3.png"),
+            pg.image.load(root_asset_dir + "/assets/hammer/hammer4.png"),
+            pg.image.load(root_asset_dir + "/assets/hammer/hammer5.png"),
         ]
         self.frame_count = 0
         # Schematic mode: disable interactivity for schematic book sidebar display.

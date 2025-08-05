@@ -4,6 +4,7 @@ A thing occupies a board tile. Buildings and resources subclass from Thing.
 Thing classes are singletons.
 """
 
+import importlib.resources
 import logging
 from functools import cache
 from pathlib import Path
@@ -25,6 +26,7 @@ class Thing(metaclass=ThingMeta):
     Place the asset of a thing at "assets / cls.asset_subdir / class_name.png".
     """
 
+    root_asset_dir = Path(str(importlib.resources.files(__package__))) / "assets"
     asset_subdir: str = ""
     score = 0
 
@@ -35,10 +37,10 @@ class Thing(metaclass=ThingMeta):
 
     @classmethod
     def get_sprite_file(cls) -> Path:
-        file = Path("assets") / cls.asset_subdir / f"{cls}.png"
+        file = cls.root_asset_dir / cls.asset_subdir / f"{cls}.png"
         if not file.exists():
             logging.critical(f"Could not find resource: {file!r}")
-            file = Path("assets") / "error.png"
+            file = cls.root_asset_dir / "error.png"
         return file
 
     def __eq__(self, obj) -> bool:
