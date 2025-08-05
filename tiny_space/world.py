@@ -11,16 +11,15 @@ from typing import Type
 import pygame as pg
 
 import config
-
-from . import buildings
-from .buildings import Building
-from .cursor import CursorStates, cursor
-from .grid import Grid
-from .helpers import ORTHOGONAL, Event, GridPoint, Notifier, Point
-from .resources import Queue, Resource
-from .score import score
-from .templates import GraphicsComponent
-from .thing import Nothing, Thing
+from tiny_space import buildings
+from tiny_space.buildings import Building
+from tiny_space.cursor import CursorStates, cursor
+from tiny_space.grid import Grid
+from tiny_space.helpers import ORTHOGONAL, Event, GridPoint, Notifier, Point
+from tiny_space.resources import Queue, Resource
+from tiny_space.score import score
+from tiny_space.templates import GraphicsComponent
+from tiny_space.thing import Nothing, Thing
 
 
 class Color(tuple, Enum):

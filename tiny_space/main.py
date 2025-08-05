@@ -1,17 +1,17 @@
 """Run this to run the game :)"""
 
+import asyncio
 import logging
 from enum import Enum
 
 import pygame as pg
 
 import config
-
-from . import debug
-from .helpers import Point
-from .sidebar import Sidebar
-from .templates import GraphicsComponent
-from .world import World
+from tiny_space import debug
+from tiny_space.helpers import Point
+from tiny_space.sidebar import Sidebar
+from tiny_space.templates import GraphicsComponent
+from tiny_space.world import World
 
 
 class State(Enum):
@@ -33,7 +33,7 @@ class Game:
         pg.display.set_caption("Tiny Space")
         self._screen = pg.display.set_mode(config.RESOLUTION, pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE)
         self.clock = pg.time.Clock()
-        self.main_loop()
+        asyncio.run(self.main())
 
     def reset(self):
         """Reset the game and start it again."""
@@ -110,10 +110,11 @@ class Game:
             self._screen.blit(surface.render(mouse_pos - pos), pos)
         pg.display.update()
 
-    def main_loop(self):
+    async def main(self):
         while True:
             # Limit FPS to 60
             time_delta = self.clock.tick(60) / 1000.0
+            await asyncio.sleep(0)
             if self.state == State.RUNNING:
                 self.process_inputs()
                 self.update(time_delta)

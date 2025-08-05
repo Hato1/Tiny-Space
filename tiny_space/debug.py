@@ -1,7 +1,7 @@
 import logging
 
-from .buildings import Building
-from .cursor import CursorStates, cursor
+from tiny_space.buildings import Building
+from tiny_space.cursor import CursorStates, cursor
 
 
 def debug_1():

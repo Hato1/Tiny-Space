@@ -6,7 +6,7 @@ from typing import Any, Callable, TypeVar, cast
 
 import pygame as pg
 
-from .helpers import Point
+from tiny_space.helpers import Point
 
 
 class DummyAttribute:

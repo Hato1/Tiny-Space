@@ -8,11 +8,10 @@ from __future__ import annotations
 
 from typing import Type
 
+from tiny_space.grid import Grid
 from tiny_space.helpers import add_spaces_to_camelcase
-
-from .grid import Grid
-from .resources import Aerofoam, Crystal, Iron, Oil
-from .thing import Nothing, Thing, Tile
+from tiny_space.resources import Aerofoam, Crystal, Iron, Oil
+from tiny_space.thing import Nothing, Thing, Tile
 
 
 class Building(Thing):

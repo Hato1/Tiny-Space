@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from tiny_space.game import Game  # noqa: I900
+from tiny_space.main import Game  # noqa: I900
 
 
 class CustomFormatter(logging.Formatter):

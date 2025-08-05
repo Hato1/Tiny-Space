@@ -9,7 +9,7 @@ from __future__ import annotations
 import random
 from typing import Type
 
-from .thing import Thing
+from tiny_space.thing import Thing
 
 
 class Resource(Thing):

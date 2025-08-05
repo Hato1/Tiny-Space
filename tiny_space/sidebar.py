@@ -8,14 +8,13 @@ from typing import Type
 import pygame as pg
 
 import config
-
-from . import resources
-from .buildings import Building
-from .cursor import CursorStates, cursor
-from .helpers import Event, Observer, Point
-from .score import score
-from .templates import GraphicsComponent
-from .world import Color, WorldGraphicsComponent
+from tiny_space import resources
+from tiny_space.buildings import Building
+from tiny_space.cursor import CursorStates, cursor
+from tiny_space.helpers import Event, Observer, Point
+from tiny_space.score import score
+from tiny_space.templates import GraphicsComponent
+from tiny_space.world import Color, WorldGraphicsComponent
 
 
 class Scoreboard(GraphicsComponent):

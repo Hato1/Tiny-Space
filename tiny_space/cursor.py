@@ -5,10 +5,10 @@ Handles the state of the cursor
 from enum import Enum
 from typing import Type
 
-from .buildings import Building
-from .grid import Grid
-from .helpers import GridPoint
-from .resources import Resource
+from tiny_space.buildings import Building
+from tiny_space.grid import Grid
+from tiny_space.helpers import GridPoint
+from tiny_space.resources import Resource
 
 
 class CursorStates(Enum):
