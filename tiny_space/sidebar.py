@@ -4,6 +4,7 @@ The sidebar contains the players score, resource queue, and the schematic librar
 """
 
 import importlib.resources
+import random
 from typing import Type
 
 import pygame as pg
@@ -25,10 +26,12 @@ class Scoreboard(GraphicsComponent):
         self.surface = pg.Surface(dims)
 
     def render(self, **kwargs) -> pg.Surface:
-        self.surface.fill(pg.Color("yellow"))
+        self.surface.fill((225, 207, 104))
         font = pg.font.SysFont(None, 24 * config.SCALE)
-        img = font.render(f"Score: {score.score}", True, pg.Color("black"))
-        self.surface.blit(img, (20 * config.SCALE, 20 * config.SCALE))
+        img = font.render(f"Score: {score.score}", True, (20, 20, 20))
+        rect = img.get_rect(midleft=self.surface.get_rect().midleft)
+        rect.x += 10 * config.SCALE
+        self.surface.blit(img, rect)
         return self.surface
 
 
@@ -43,12 +46,23 @@ class ResourceQueueUI(GraphicsComponent, Observer):
         self.resource_queue_head: Type[resources.Resource] = resources.Resource
         self.last_resource_placed_time: int = -100000
 
+        # Hacky animation variables.
+        random.seed()
+        self.y_variation: list[int] = [
+            random.randrange(-6 * config.SCALE, 6 * config.SCALE) for _ in range(self.resources_to_render + 2)
+        ]
+        self.new_y_variation: None | list[int] = None
+
     def event_listener(self, event: Event):
         if event == Event.PlaceResource:
             self.last_resource_placed_time = pg.time.get_ticks()
 
     def render(self, **kwargs) -> pg.Surface:
-        self.surface.fill(pg.Color("white"))
+        self.surface.fill((165 // 2, 169 // 2, 180 // 2))
+        rect = self.surface.get_rect()
+        pg.draw.line(self.surface, (165, 169, 180), rect.topleft, rect.topright, 9 * config.SCALE)
+        pg.draw.line(self.surface, (165, 169, 180), rect.bottomleft, rect.bottomright, 9 * config.SCALE)
+
         resources_to_display = resources.Queue.peek_n(self.resources_to_render)
         time_delta = pg.time.get_ticks() - self.last_resource_placed_time
         animation_offset = 0
@@ -57,23 +71,56 @@ class ResourceQueueUI(GraphicsComponent, Observer):
             resources_to_display.insert(0, resources.Queue.last_resource_taken)
             animation_offset = int(-self.distance_between_resources * (time_delta / self.animation_duration))
 
+        font_file = f"{ROOT_ASSET_DIR}/assets/Orbitron-Regular.ttf"
+        font = pg.Font(font_file, 9)
+        arrows = font.render("< < <          " * 50, False, (234, 236, 236))
+        arrows.set_alpha(127)
+        arrows_rect = arrows.get_rect(midleft=(-10 + animation_offset, rect.bottom // 3))
+        self.surface.blit(arrows, arrows_rect)
+        arrows_rect = arrows.get_rect(midleft=(-10 + animation_offset, rect.bottom * 2 // 3))
+        self.surface.blit(arrows, arrows_rect)
+
+        if animation_offset:
+            if not self.new_y_variation:
+                random.seed()
+                self.new_y_variation = [
+                    random.randrange(-1 * config.SCALE, 1 * config.SCALE) + i for i in self.y_variation
+                ]
+                self.new_y_variation.append(random.randrange(-6 * config.SCALE, 6 * config.SCALE))
+
+            y_variation = [
+                int(
+                    self.y_variation[i]
+                    + ((self.new_y_variation[i] - self.y_variation[i]) * (time_delta / self.animation_duration))
+                )
+                for i in range(self.resources_to_render + 1)
+            ]
+        else:
+            if self.new_y_variation:
+                self.y_variation = self.new_y_variation[1:]
+                self.new_y_variation = None
+            y_variation = self.y_variation
+
         for i, resource in enumerate(resources_to_display):
             resource_surf = pg.transform.scale_by(resource.image(), config.SCALE)
             x = 10 + animation_offset + (self.distance_between_resources * i)
             # Center Y
             y = resource_surf.get_rect(center=self.surface.get_rect().center).top
-            self.surface.blit(resource_surf, (x, y))
+            self.surface.blit(resource_surf, (x, y + y_variation[i]))
         return self.surface
 
 
 class SchematicEntry(GraphicsComponent):
-    font_size = 18 * config.SCALE
     font_file = ROOT_ASSET_DIR + "/assets/Orbitron-Regular.ttf"
+    font_size = 18 * config.SCALE
+    desc_font_file = ROOT_ASSET_DIR + "/assets/Verdana.ttf"
+    desc_font_size = 12 * config.SCALE
 
     def __init__(self, dims: Point, building: type[Building]):
         self.surface = pg.Surface(dims)
         self.building = building
         self.font = pg.font.Font(self.font_file, size=self.font_size)
+        self.desc_font = pg.font.Font(self.desc_font_file, size=self.desc_font_size)
         self.build_button_rect = pg.Rect()
 
     def render(self, *, mouse_position: Point, **kwargs):
@@ -98,12 +145,25 @@ class SchematicEntry(GraphicsComponent):
         )
 
         # Draw building icon.
-        building_surf = pg.transform.scale_by(self.building.image(), config.SCALE)
-        rect = building_surf.get_rect(midleft=(description_rect.left + gap_between_elements, description_rect.centery))
-        self.surface.blit(building_surf, rect)
+        icon_surf = pg.transform.scale_by(self.building.image(), config.SCALE)
+        icon_rect = icon_surf.get_rect(midleft=(description_rect.left + gap_between_elements, description_rect.centery))
+        self.surface.blit(icon_surf, icon_rect)
+
+        # Draw description box divider.
+        for y in range(description_rect.top, description_rect.bottom - config.SCALE, 2 * config.SCALE):
+            pg.draw.line(
+                self.surface,
+                (20, 20, 20),
+                (icon_rect.right + gap_between_elements, y),
+                (icon_rect.right + gap_between_elements, y + config.SCALE),
+                width=config.SCALE,
+            )
 
         # Draw building effect.
-        # TODO
+        desc_width = description_rect.right - icon_rect.right - (gap_between_elements * 3)
+        desc_text = self.desc_font.render(self.building.description, True, pg.Color("black"), wraplength=desc_width)
+        desc_rect = desc_text.get_rect(midleft=(icon_rect.right + gap_between_elements * 2, description_rect.centery))
+        self.surface.blit(desc_text, desc_rect)
 
         # Draw build button.
         build_rect = pg.Rect()

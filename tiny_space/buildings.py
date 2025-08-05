@@ -16,6 +16,7 @@ from tiny_space.thing import Nothing, Thing, Tile
 
 class Building(Thing):
     asset_subdir = "buildings"
+    description = "I'm a building"
 
     # The 'recipe' to construct this building.
     _schematic: Grid | None = None
@@ -52,6 +53,7 @@ class Base(Building): ...
 
 
 class WardenOutpost(Building):
+    description = "Gives 2 points for each adjacent Facility."
     # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(Nothing), Tile(Aerofoam), Tile(Nothing)]]
     schematic_list: list[list[Tile]] = [[Oil, Crystal, Crystal], [Nothing, Aerofoam, Nothing]]
     _schematic = grid_from_transposed(schematic_list)
@@ -59,6 +61,7 @@ class WardenOutpost(Building):
 
 
 class CommsTower(Building):
+    description = "aa a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a"
     schematic_list: list[list[Tile]] = [[Crystal, Iron, Crystal, Oil]]
     _schematic = grid_from_transposed(schematic_list)
 
