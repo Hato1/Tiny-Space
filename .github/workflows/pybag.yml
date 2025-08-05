@@ -11,19 +11,15 @@ jobs:
     - uses: actions/checkout@v2
     - name: Checkout
       run: |
-            sudo apt-get install -y ffmpeg pngquant
-            python -m pip install git+https://github.com/pygame-web/pygbag
+            python -m pip install pygbag
             python -m pygbag \
               --build \
               --PYBUILD=3.12 \
               --app_name="Tiny Space" \
-              --ume_block=0 \
-              --git \
-              --template noctx.tmpl \
+              --ume_block=1 \
               --title="Tiny Space" \
               --icon=$GITHUB_WORKSPACE/tiny_space/assets/favicon.png \
               $GITHUB_WORKSPACE/main.py
-            touch build/web/.nojekyll
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
