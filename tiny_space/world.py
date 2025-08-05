@@ -47,11 +47,11 @@ class WorldGraphicsComponent(GraphicsComponent):
 
         root_asset_dir = str(importlib.resources.files(__package__))
         self.hammer_assets = [
-            pg.image.load(root_asset_dir + "/assets/hammer/hammer1.png"),
-            pg.image.load(root_asset_dir + "/assets/hammer/hammer2.png"),
-            pg.image.load(root_asset_dir + "/assets/hammer/hammer3.png"),
-            pg.image.load(root_asset_dir + "/assets/hammer/hammer4.png"),
-            pg.image.load(root_asset_dir + "/assets/hammer/hammer5.png"),
+            pg.image.load(f"{root_asset_dir}/assets/hammer/hammer1.png"),
+            pg.image.load(f"{root_asset_dir}/assets/hammer/hammer2.png"),
+            pg.image.load(f"{root_asset_dir}/assets/hammer/hammer3.png"),
+            pg.image.load(f"{root_asset_dir}/assets/hammer/hammer4.png"),
+            pg.image.load(f"{root_asset_dir}/assets/hammer/hammer5.png"),
         ]
         self.frame_count = 0
         # Schematic mode: disable interactivity for schematic book sidebar display.

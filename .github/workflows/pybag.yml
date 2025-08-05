@@ -12,7 +12,7 @@ jobs:
     - name: Checkout
       run: |
             python -m pip install pygbag
-            python -m pygbag --build $GITHUB_WORKSPACE/main.py
+            python -m pygbag --build --PYBUILD=3.12 --app_name="Tiny Space" --ume_block=0 --git --template noctx.tmpl --title="Tiny Space" --icon=$GITHUB_WORKSPACE/tiny_space/assets/favicon.png $GITHUB_WORKSPACE/main.py
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
