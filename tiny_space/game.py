@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import platform
 import sys
 from enum import Enum
 
@@ -33,6 +34,15 @@ class Game:
         pg.init()
         pg.display.set_caption("Tiny Space")
         # Pygbag doesn't support many modes.
+        if hasattr(platform, "window"):
+            aspect_ratio = platform.window.innerWidth / platform.window.innerHeight  # type: ignore[unused-ignore]
+            width, height = config.RESOLUTION
+            # Expand resolution to match aspect ratio.
+            if width / aspect_ratio > height:
+                height = width // aspect_ratio
+            else:
+                width = height * aspect_ratio
+            config.RESOLUTION = (width, height)
         options = pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.RESIZABLE if sys.platform != "emscripten" else 0
         self._screen = pg.display.set_mode(config.RESOLUTION, options)
         self.clock = pg.time.Clock()
