@@ -16,7 +16,7 @@ jobs:
               --build \
               --PYBUILD=3.12 \
               --app_name="Tiny Space" \
-              --ume_block=1 \
+              --ume_block=0 \
               --title="Tiny Space" \
               --icon=$GITHUB_WORKSPACE/tiny_space/assets/favicon.png \
               $GITHUB_WORKSPACE/main.py
