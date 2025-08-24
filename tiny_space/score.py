@@ -1,25 +1,22 @@
 """Handler for the score"""
 
-import logging
+from dataclasses import dataclass
 
 
+@dataclass
 class Score:
-    def __init__(self):
-        self._score = 0
+    # Four kinds of scores.
+    red: int = 0
+    blue: int = 0
+    green: int = 0
+    yellow: int = 0
 
-    @property
-    def score(self):
-        return self._score
-
-    @score.setter
-    def score(self, score: int):
-        if score < 0:
-            raise ValueError("Can't set negative score!")
-        logging.info(f"Set score to {score}.")
-        self._score = score
+    def set_scores(self, red: int, blue: int, green: int, yellow: int) -> None:
+        """Set the scores for each color."""
+        self.red = red
+        self.blue = blue
+        self.green = green
+        self.yellow = yellow
 
 
 score = Score()
-
-# score.score = 5
-# print(score.score)  # -> 5

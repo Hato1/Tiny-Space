@@ -229,7 +229,9 @@ class World(GraphicsComponent):
         return True
 
     def calculate_score(self):
-        score.score = sum(tile.score for _pos, tile in self.grid)
+        each_tiles_score = [tile.score for _pos, tile in self.grid]
+        new_scores = [sum(scores) for scores in zip(*each_tiles_score, strict=True)]
+        score.set_scores(*new_scores)
 
     def lock_build_outline(self, location: GridPoint):
         """Checks whether a building can be build with selected resources"""

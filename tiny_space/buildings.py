@@ -57,7 +57,6 @@ class WardenOutpost(Building):
     # schematic_list = [[Tile(Iron), Tile(Oil), Tile(Iron)], [Tile(Nothing), Tile(Aerofoam), Tile(Nothing)]]
     schematic_list: list[list[Tile]] = [[Oil, Crystal, Crystal], [Nothing, Aerofoam, Nothing]]
     _schematic = grid_from_transposed(schematic_list)
-    score = 5
 
 
 class CommsTower(Building):
@@ -92,5 +91,25 @@ class Sit(Building):
 
 
 class Amet(Building):
+    schematic_list: list[list[Tile]] = [[Oil]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Consectetur(Building):
+    schematic_list: list[list[Tile]] = [[Oil]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Adipisci(Building):
+    schematic_list: list[list[Tile]] = [[Oil]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Velit(Building):
+    schematic_list: list[list[Tile]] = [[Oil]]
+    _schematic = grid_from_transposed(schematic_list)
+
+
+class Eidesis(Building):
     schematic_list: list[list[Tile]] = [[Oil]]
     _schematic = grid_from_transposed(schematic_list)

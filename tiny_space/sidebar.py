@@ -5,6 +5,7 @@ The sidebar contains the players score, resource queue, and the schematic librar
 
 import importlib.resources
 import random
+from dataclasses import fields
 from typing import Type
 
 import pygame as pg
@@ -22,16 +23,20 @@ ROOT_ASSET_DIR = str(importlib.resources.files(__package__))
 
 
 class Scoreboard(GraphicsComponent):
+    font_file = ROOT_ASSET_DIR + "/assets/Orbitron-Regular.ttf"
+    font_size = 18 * config.SCALE
+
     def __init__(self, dims: Point):
         self.surface = pg.Surface(dims)
+        self.font = pg.font.Font(self.font_file, size=self.font_size)
 
     def render(self, **kwargs) -> pg.Surface:
         self.surface.fill((225, 207, 104))
-        font = pg.font.SysFont(None, 24 * config.SCALE)
-        img = font.render(f"Score: {score.score}", True, (20, 20, 20))
-        rect = img.get_rect(midleft=self.surface.get_rect().midleft)
-        rect.x += 10 * config.SCALE
-        self.surface.blit(img, rect)
+        for i, s in enumerate(fields(score)):
+            x = (self.surface.get_width() // 5) * (i + 1)
+            img = self.font.render(str(getattr(score, s.name)), True, (20, 20, 20))
+            rect = img.get_rect(center=(x, self.surface.get_height() // 2))
+            self.surface.blit(img, rect)
         return self.surface
 
 

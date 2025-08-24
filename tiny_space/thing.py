@@ -28,7 +28,7 @@ class Thing(metaclass=ThingMeta):
 
     root_asset_dir = Path(str(importlib.resources.files(__package__))) / "assets"
     asset_subdir: str = ""
-    score = 0
+    score = [0, 0, 0, 0]  # Four kinds of scores.
 
     @classmethod
     @cache
@@ -48,7 +48,7 @@ class Thing(metaclass=ThingMeta):
 
 
 class Nothing:
-    score = 0
+    score = [0, 0, 0, 0]  # Four kinds of scores.
 
     @classmethod
     def image(cls):
